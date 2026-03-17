@@ -776,31 +776,49 @@ function submit() {
   document.getElementById('stepBadge').textContent = '✓';
   document.getElementById('stepLabel').textContent  = 'Готово!';
 
-  // Диагностика
   dbg('tg exists: ' + !!tg);
-  dbg('sendData fn: ' + !!(tg && tg.sendData));
-  dbg('query_id: ' + (tg && tg.initDataUnsafe ? tg.initDataUnsafe.query_id || 'нет' : 'нет initDataUnsafe'));
   dbg('initData len: ' + (tg && tg.initData ? tg.initData.length : 0));
-  dbg('данные ' + json.length + ' байт');
-  dbg('тип бота: ' + (data.botType || 'не выбран'));
+  dbg('user: ' + JSON.stringify(tg && tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user : 'нет'));
 
+  // Пробуем sendData
   if (tg && tg.sendData) {
     try {
       tg.sendData(json);
-      dbg('✅ sendData вызван успешно');
-      document.getElementById('s-title').textContent = 'Анкета отправлена!';
-      document.getElementById('s-desc').textContent = 'Данные переданы боту. Напишем вам с расчётом стоимости 😊';
+      dbg('✅ sendData вызван');
     } catch(e) {
-      dbg('❌ sendData ошибка: ' + e.message);
-      document.getElementById('s-circle').textContent = '⚠️';
-      document.getElementById('s-title').textContent = 'Ошибка отправки';
-      document.getElementById('s-desc').textContent = 'sendData не сработал. Закройте и напишите боту вручную.';
+      dbg('❌ sendData: ' + e.message);
     }
+  }
+
+  // ПАРАЛЛЕЛЬНО — отправляем через Telegram Bot API напрямую
+  // Берём user_id из initDataUnsafe
+  const userId = tg && tg.initDataUnsafe && tg.initDataUnsafe.user
+                 ? tg.initDataUnsafe.user.id
+                 : null;
+
+  if (userId) {
+    dbg('Отправляю через Bot API для user ' + userId);
+    const BOT_TOKEN = '8426050936:AAFEK0mh-QmqL1IFEzDKg5SWro0K-dSgtvI';
+    const text = 'WEBAPP_DATA:' + json;
+
+    fetch('https://api.telegram.org/bot' + BOT_TOKEN + '/sendMessage', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: userId, text: text })
+    })
+    .then(r => r.json())
+    .then(r => {
+      if (r.ok) {
+        dbg('✅ Bot API sendMessage OK');
+        document.getElementById('s-title').textContent = 'Анкета отправлена!';
+        document.getElementById('s-desc').textContent = 'Данные переданы боту. Напишем с расчётом стоимости 😊';
+      } else {
+        dbg('❌ Bot API: ' + JSON.stringify(r));
+      }
+    })
+    .catch(e => dbg('❌ fetch: ' + e.message));
   } else {
-    dbg('❌ tg.sendData недоступен — анкета открыта не через кнопку бота');
-    document.getElementById('s-circle').textContent = '⚠️';
-    document.getElementById('s-title').textContent = 'Нужно открыть через бота';
-    document.getElementById('s-desc').textContent = 'Закройте, напишите боту /start и нажмите кнопку "📝 Заполнить анкету"';
+    dbg('⚠️ user_id недоступен — sendData единственный канал');
   }
 }
 
