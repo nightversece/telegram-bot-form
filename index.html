@@ -1,861 +1,802 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Анкета для бота</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Анкета — разработка бота</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --secondary: #8b5cf6;
-            --dark: #1e293b;
-            --light: #f8fafc;
-            --gray: #94a3b8;
-            --success: #10b981;
-            --error: #ef4444;
-            --shadow: 0 4px 20px rgba(0,0,0,0.08);
-            --radius: 12px;
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+:root {
+  --ink:     #0f1117;
+  --ink-2:   #3d4152;
+  --ink-3:   #8891a4;
+  --bg:      #f5f6fa;
+  --surface: #ffffff;
+  --border:  #e4e7ef;
+  --accent:  #2563eb;
+  --accent-2:#0ea5e9;
+  --accent-bg:#eff6ff;
+  --accent-b: #bfdbfe;
+  --error:   #dc2626;
+  --ok:      #16a34a;
+  --r-sm: 10px; --r-md: 14px; --r-lg: 20px;
+  --ff-h: 'Unbounded', sans-serif;
+  --ff-b: 'Manrope', sans-serif;
+  --ease: cubic-bezier(.4,0,.2,1);
+}
 
-        body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: linear-gradient(135deg, #f0f4ff 0%, #e2e8f0 100%);
-            min-height: 100vh;
-            padding: 16px;
-            color: var(--dark);
-            line-height: 1.6;
-        }
+html { height: 100%; }
 
-        .container {
-            max-width: 700px;
-            margin: 0 auto;
-            background: white;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            overflow: hidden;
-        }
+body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  font-family: var(--ff-b);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
 
-        .header {
-            text-align: center;
-            padding: 24px 20px;
-            border-bottom: 1px solid #e2e8f0;
-        }
+/* ── SHELL: fixed full-height column ─────────────────── */
+#app {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  max-width: 600px;
+  margin: 0 auto;
+  background: var(--surface);
+}
 
-        .header h1 {
-            font-size: 26px;
-            font-weight: 700;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            margin-bottom: 8px;
-        }
+/* ── HEADER ────────────────────────────────────────── */
+.hdr {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px 10px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.hdr-icon {
+  width: 34px; height: 34px;
+  background: var(--accent-bg);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.hdr-text { flex: 1; min-width: 0; }
+.hdr-title {
+  font-family: var(--ff-h);
+  font-size: 12px; font-weight: 700;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.hdr-sub { font-size: 11px; color: var(--ink-3); margin-top: 1px; }
+.hdr-badge {
+  flex-shrink: 0;
+  font-family: var(--ff-h);
+  font-size: 11px; font-weight: 700;
+  background: var(--accent-bg);
+  color: var(--accent);
+  border: 1px solid var(--accent-b);
+  border-radius: 20px;
+  padding: 3px 10px;
+}
 
-        .header p { color: var(--gray); font-size: 15px; }
+/* ── PROGRESS ──────────────────────────────────────── */
+.prog-wrap {
+  flex-shrink: 0;
+  height: 3px;
+  background: var(--border);
+  overflow: hidden;
+}
+.prog-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  transition: width .4s var(--ease);
+}
 
-        /* ПРОГРЕСС */
-        .progress-container {
-            height: 6px;
-            background: #e2e8f0;
-            margin: 0;
-        }
+/* ── DOTS ──────────────────────────────────────────── */
+.dots {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  padding: 8px 16px 6px;
+}
+.dot {
+  height: 6px; width: 6px;
+  border-radius: 3px;
+  background: var(--border);
+  transition: all .3s var(--ease);
+}
+.dot.done { background: var(--accent-2); }
+.dot.active { background: var(--accent); width: 16px; }
 
-        .progress-bar {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            width: 12.5%;
-            transition: var(--transition);
-        }
+/* ── SCROLL AREA ───────────────────────────────────── */
+.scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding: 18px 16px 12px;
+}
 
-        .step-indicator {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            padding: 12px 16px;
-            background: #f8fafc;
-            border-bottom: 1px solid #e2e8f0;
-        }
+/* ── SECTIONS ──────────────────────────────────────── */
+.sec { display: none; }
+.sec.active { display: block; animation: si .25s var(--ease); }
+.sec.back   { display: block; animation: sb .25s var(--ease); }
+@keyframes si { from { opacity:0; transform:translateX(24px); } to { opacity:1; transform:none; } }
+@keyframes sb { from { opacity:0; transform:translateX(-24px); } to { opacity:1; transform:none; } }
 
-        .step-dot {
-            width: 8px; height: 8px;
-            background: #cbd5e1;
-            border-radius: 50%;
-            transition: var(--transition);
-        }
+/* ── SECTION HEADER ────────────────────────────────── */
+.sh {
+  display: flex; gap: 12px;
+  margin-bottom: 14px;
+}
+.sh-ico {
+  width: 40px; height: 40px;
+  background: var(--accent-bg);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0; margin-top: 2px;
+}
+.sh-t { font-family: var(--ff-h); font-size: 15px; font-weight: 700; line-height: 1.3; }
+.sh-d { font-size: 12px; color: var(--ink-3); margin-top: 4px; line-height: 1.5; }
+.req  { color: var(--error); }
 
-        .step-dot.active {
-            background: var(--primary);
-            transform: scale(1.3);
-            box-shadow: 0 0 0 3px rgba(99,102,241,0.2);
-        }
+/* ── FIELDS ─────────────────────────────────────────── */
+.f { margin-bottom: 14px; }
+.fl {
+  display: block;
+  font-size: 12px; font-weight: 600;
+  color: var(--ink-2);
+  margin-bottom: 7px;
+}
+textarea, input[type="text"], input[type="number"], select {
+  display: block; width: 100%;
+  padding: 11px 13px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  font-family: var(--ff-b);
+  font-size: 15px; color: var(--ink);
+  background: var(--surface);
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+  -webkit-appearance: none; appearance: none;
+}
+textarea:focus, input:focus, select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+}
+textarea { min-height: 80px; resize: vertical; }
 
-        /* СЕКЦИИ — FIX: overflow hidden на враппере + relative positioning */
-        .form-wrapper {
-            padding: 24px 16px;
-            min-height: 420px;
-            position: relative;
-            overflow: hidden;
-        }
+/* ── Обёртка textarea с кнопкой скрытия клавиатуры ── */
+.ta-wrap { position: relative; }
+.ta-wrap textarea { padding-bottom: 36px; }
+.ta-done {
+  position: absolute;
+  bottom: 8px; right: 8px;
+  width: 28px; height: 28px;
+  background: var(--accent);
+  color: white;
+  border: none; border-radius: 8px;
+  font-size: 14px; cursor: pointer;
+  display: none;
+  align-items: center; justify-content: center;
+  opacity: 0;
+  transition: opacity .2s;
+  z-index: 2;
+}
+.ta-wrap.focused .ta-done {
+  display: flex;
+  opacity: 1;
+}
+select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238891a4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 13px center;
+  padding-right: 36px; cursor: pointer;
+}
+.err {
+  font-size: 12px; color: var(--error);
+  margin-top: 5px; display: none;
+}
+.err.on { display: block; }
+.row2 { display: grid; grid-template-columns:1fr 1fr; gap:8px; }
+.hr { height:1px; background:var(--border); margin:14px 0; }
 
-        /* FIX #1: исправлен класс .-section.prev → .form-section.prev */
-        .form-section {
-            position: absolute;
-            top: 24px;
-            left: 16px;
-            right: 16px;
-            opacity: 0;
-            transform: translateX(100%);
-            transition: var(--transition);
-            pointer-events: none;
-        }
+/* ── CARDS GRID ─────────────────────────────────────── */
+.cg {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.cg-1 { grid-template-columns: 1fr; }
 
-        .form-section.active {
-            opacity: 1;
-            transform: translateX(0);
-            pointer-events: all;
-            position: relative;
-            top: auto; left: auto; right: auto;
-        }
+.c {
+  position: relative;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 6px; padding: 12px 8px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  font-size: 12px; font-weight: 500;
+  color: var(--ink-2);
+  background: var(--surface);
+  text-align: center;
+  min-height: 68px;
+  transition: border-color .18s, background .18s, transform .12s;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.c:active { transform: scale(.96); }
+.c .ci { font-size: 20px; line-height: 1; }
 
-        /* FIX #1: правильный класс для анимации назад */
-        .form-section.prev {
-            opacity: 0;
-            transform: translateX(-100%);
-        }
+.c.on {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+  color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(37,99,235,.08);
+}
+.c::after {
+  content:'';
+  position: absolute; top:7px; right:7px;
+  width:15px; height:15px;
+  border-radius:50%;
+  border:1.5px solid var(--border);
+  background: var(--surface);
+  transition: all .18s;
+}
+.c.on::after {
+  background: var(--accent);
+  border-color: var(--accent);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='7'%3E%3Cpath d='M1 3.5l2.5 2.5L8 1' stroke='white' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+}
 
-        .section-title {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 16px;
-            color: var(--dark);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+/* Horizontal card */
+.c.h {
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  padding: 13px 16px;
+  min-height: 54px;
+  text-align: left;
+}
+.c.h .ci { font-size: 18px; flex-shrink:0; }
+.c.h .ct { flex:1; font-size:13px; }
+.c.h .cs { font-size:11px; color:var(--ink-3); font-weight:400; margin-top:1px; }
 
-        .section-title i { color: var(--primary); }
+/* ── TOGGLE ─────────────────────────────────────────── */
+.tg-row {
+  display: flex; align-items: center;
+  justify-content: space-between; gap:10px;
+  padding: 12px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  margin-bottom: 10px;
+  transition: border-color .2s, background .2s;
+  user-select: none;
+}
+.tg-row:active { background: var(--bg); }
+.tg-row.on { border-color: var(--accent); background: var(--accent-bg); }
+.tg-lbl { font-size:13px; font-weight:500; flex:1; line-height:1.4; }
+.tg-trk {
+  position:relative; width:42px; height:22px;
+  background: var(--border); border-radius:11px;
+  transition: background .22s; flex-shrink:0;
+}
+.tg-row.on .tg-trk { background: var(--accent); }
+.tg-thm {
+  position:absolute; top:3px; left:3px;
+  width:16px; height:16px;
+  background:white; border-radius:50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+  transition: transform .22s var(--ease);
+}
+.tg-row.on .tg-thm { transform: translateX(20px); }
 
-        .section-description {
-            color: var(--gray);
-            font-size: 14px;
-            margin-bottom: 20px;
-            background: #f8fafc;
-            padding: 12px 16px;
-            border-radius: 10px;
-            border-left: 3px solid var(--primary);
-        }
+/* ── NAV ────────────────────────────────────────────── */
+.nav {
+  flex-shrink: 0;
+  display: flex; gap: 8px;
+  padding: 10px 16px max(10px, env(safe-area-inset-bottom));
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+.btn {
+  flex:1; height:50px;
+  border:none; border-radius:var(--r-md);
+  font-family:var(--ff-b); font-size:14px; font-weight:600;
+  cursor:pointer; display:flex; align-items:center; justify-content:center; gap:5px;
+  transition: opacity .15s, transform .12s;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn:active { transform: scale(.97); opacity:.9; }
+.btn-back { background:var(--bg); color:var(--ink-2); max-width:110px; }
+.btn-next {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color:white;
+  box-shadow: 0 3px 14px rgba(37,99,235,.28);
+}
+.btn-sub {
+  background: linear-gradient(135deg, var(--ok), #0ea5e9);
+  color:white;
+  box-shadow: 0 3px 14px rgba(22,163,74,.28);
+}
 
-        .form-group { margin-bottom: 20px; }
+/* ── SUCCESS ────────────────────────────────────────── */
+.success {
+  display: none; flex-direction:column;
+  align-items:center; justify-content:center;
+  height:100%; padding:40px 24px;
+  text-align:center;
+}
+.success.on { display:flex; animation: fadeUp .4s var(--ease); }
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(20px) scale(.97); }
+  to   { opacity:1; transform:none; }
+}
+.s-circle {
+  width:72px; height:72px;
+  background: linear-gradient(135deg, var(--ok), var(--accent-2));
+  border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:32px; margin-bottom:18px;
+  box-shadow: 0 8px 20px rgba(22,163,74,.3);
+}
+.s-title { font-family:var(--ff-h); font-size:18px; font-weight:700; margin-bottom:8px; }
+.s-desc  { font-size:13px; color:var(--ink-3); line-height:1.6; max-width:260px; }
 
-        label.field-label {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            margin-bottom: 10px;
-            font-weight: 600;
-            color: var(--dark);
-            font-size: 15px;
-        }
-
-        .required { color: var(--error); font-size: 16px; }
-
-        input[type="text"],
-        input[type="number"],
-        textarea,
-        select {
-            width: 100%;
-            padding: 12px 14px;
-            border: 1.5px solid #cbd5e1;
-            border-radius: 10px;
-            font-size: 15px;
-            transition: var(--transition);
-            background: #f8fafc;
-            font-family: inherit;
-            color: var(--dark);
-        }
-
-        input[type="text"]:focus,
-        input[type="number"]:focus,
-        textarea:focus,
-        select:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
-            background: white;
-        }
-
-        textarea { min-height: 90px; resize: vertical; }
-
-        /* ЧЕКБОКСЫ — FIX #2: убраны hidden input внутри label, используем data-value */
-        .checkbox-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-            gap: 12px;
-            margin-top: 8px;
-        }
-
-        .check-card {
-            background: #f8fafc;
-            border: 1.5px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 14px 10px;
-            text-align: center;
-            cursor: pointer;
-            transition: var(--transition);
-            font-size: 13px;
-            font-weight: 500;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            user-select: none;
-        }
-
-        .check-card:hover {
-            border-color: var(--primary);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        }
-
-        .check-card.selected {
-            background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(139,92,246,0.1));
-            border-color: var(--primary);
-            color: var(--primary-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(99,102,241,0.2);
-        }
-
-        .check-card i {
-            font-size: 20px;
-            color: var(--gray);
-            transition: var(--transition);
-        }
-
-        .check-card.selected i { color: var(--primary); }
-
-        /* РАДИО */
-        .radio-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-top: 10px;
-        }
-
-        .radio-card {
-            flex: 1;
-            min-width: 130px;
-            background: #f8fafc;
-            border: 1.5px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 14px 12px;
-            text-align: center;
-            cursor: pointer;
-            transition: var(--transition);
-            font-size: 14px;
-            font-weight: 500;
-            user-select: none;
-        }
-
-        .radio-card:hover {
-            border-color: var(--primary);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        }
-
-        .radio-card.selected {
-            background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(139,92,246,0.1));
-            border-color: var(--primary);
-            color: var(--primary-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(99,102,241,0.2);
-        }
-
-        /* FIX #3: TOGGLE — правильная структура без конфликта классов */
-        .toggle-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            padding: 14px;
-            background: #f8fafc;
-            border-radius: 10px;
-            border: 1.5px solid #e2e8f0;
-            margin-bottom: 12px;
-            cursor: pointer;
-        }
-
-        .toggle-label { font-size: 14px; font-weight: 500; color: var(--dark); flex: 1; }
-
-        .toggle-track {
-            position: relative;
-            width: 46px;
-            height: 24px;
-            background: #cbd5e1;
-            border-radius: 34px;
-            transition: var(--transition);
-            flex-shrink: 0;
-        }
-
-        .toggle-track.on { background: var(--primary); }
-
-        .toggle-thumb {
-            position: absolute;
-            top: 3px;
-            left: 3px;
-            width: 18px;
-            height: 18px;
-            background: white;
-            border-radius: 50%;
-            transition: var(--transition);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-        }
-
-        .toggle-track.on .toggle-thumb { transform: translateX(22px); }
-
-        /* ОШИБКИ */
-        .error-msg {
-            color: var(--error);
-            font-size: 13px;
-            margin-top: 8px;
-            display: none;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
-
-        .shake { animation: shake 0.3s; }
-
-        /* КНОПКИ */
-        .btn-group {
-            background: white;
-            padding: 14px 16px;
-            border-top: 1px solid #e2e8f0;
-            display: flex;
-            gap: 12px;
-            box-shadow: 0 -2px 12px rgba(0,0,0,0.05);
-        }
-
-        .btn {
-            padding: 14px 24px;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            flex: 1;
-        }
-
-        .btn:active { transform: scale(0.97); }
-
-        .btn-primary {
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            color: white;
-            box-shadow: 0 4px 12px rgba(99,102,241,0.3);
-        }
-
-        .btn-primary:hover {
-            background: linear-gradient(90deg, var(--primary-dark), #7c3aed);
-            box-shadow: 0 6px 16px rgba(99,102,241,0.4);
-        }
-
-        .btn-secondary {
-            background: #f1f5f9;
-            color: var(--dark);
-        }
-
-        .btn-secondary:hover { background: #e2e8f0; }
-
-        .budget-row { display: flex; gap: 12px; }
-        .budget-row input { flex: 1; }
-
-        /* УСПЕХ */
-        .success-screen {
-            display: none;
-            text-align: center;
-            padding: 40px 20px;
-        }
-
-        .success-screen i {
-            font-size: 56px;
-            color: var(--success);
-            margin-bottom: 16px;
-        }
-
-        .success-screen h2 { font-size: 22px; margin-bottom: 8px; }
-        .success-screen p { color: var(--gray); font-size: 15px; }
-
-        /* Адаптив */
-        @media (max-width: 480px) {
-            body { padding: 10px; }
-            .header h1 { font-size: 22px; }
-            .form-wrapper { padding: 18px 14px; min-height: 380px; }
-            .checkbox-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
-            .check-card { padding: 12px 8px; font-size: 12px; }
-            .radio-group { flex-direction: column; }
-            .radio-card { min-width: 100%; }
-            .btn { padding: 13px; font-size: 15px; }
-            .btn-group { flex-direction: column; }
-            .budget-row { flex-direction: column; }
-        }
-    </style>
+/* ── RESPONSIVE ─────────────────────────────────────── */
+@media (min-width:480px) { .cg { grid-template-columns:repeat(3,1fr); } }
+@media (min-width:640px) {
+  body { overflow:auto; background:#e8ecf5; }
+  #app {
+    margin:20px auto; border-radius:var(--r-lg);
+    box-shadow:0 8px 32px rgba(0,0,0,.12);
+    height:auto; min-height:calc(100vh - 40px);
+    overflow:hidden;
+  }
+  .sh-t { font-size:17px; }
+}
+</style>
 </head>
 <body>
-<div class="container">
-    <div class="header">
-        <h1>🤖 Анкета для бота</h1>
-        <p>8 простых шагов — и мы создадим идеального бота</p>
+<div id="app">
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="hdr-icon">🤖</div>
+    <div class="hdr-text">
+      <div class="hdr-title">Анкета — разработка бота</div>
+      <div class="hdr-sub" id="stepLabel">Шаг 1 из 8</div>
+    </div>
+    <div class="hdr-badge" id="stepBadge">1/8</div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="prog-wrap">
+    <div class="prog-fill" id="progFill" style="width:12.5%"></div>
+  </div>
+
+  <!-- DOTS -->
+  <div class="dots" id="dotsWrap">
+    <div class="dot active"></div>
+    <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    <div class="dot"></div>
+  </div>
+
+  <!-- SCROLL AREA -->
+  <div class="scroll" id="scrollArea">
+
+    <!-- S1: Тип бота -->
+    <div class="sec active" id="s1">
+      <div class="sh">
+        <div class="sh-ico">🗂️</div>
+        <div><div class="sh-t">Тип бота<span class="req"> *</span></div>
+        <div class="sh-d">Выберите основное назначение — это поможет точнее оценить задачу и предложить оптимальное решение</div></div>
+      </div>
+      <div class="f">
+        <select id="botType">
+          <option value="">Выберите тип бота...</option>
+          <option value="booking">📅 Запись / бронирование</option>
+          <option value="shop">🛒 Магазин / каталог</option>
+          <option value="delivery">🚚 Доставка</option>
+          <option value="education">🎓 Обучение / тесты</option>
+          <option value="support">💬 Поддержка / FAQ</option>
+          <option value="broadcast">📢 Рассылки</option>
+          <option value="internal">🏢 Внутренние задачи</option>
+          <option value="other">✨ Другое</option>
+        </select>
+        <div class="err" id="e1">⚠ Пожалуйста, выберите тип бота</div>
+      </div>
+      <div id="otherWrap" style="display:none" class="f">
+        <label class="fl">Уточните тип:</label>
+        <div class="ta-wrap"><textarea id="otherDesc" placeholder="Например: бот для автоматизации отчётности"></textarea><button class="ta-done" tabindex="-1">✓</button></div>
+      </div>
     </div>
 
-    <div class="progress-container">
-        <div class="progress-bar" id="progressBar"></div>
+    <!-- S2: Аудитория -->
+    <div class="sec" id="s2">
+      <div class="sh">
+        <div class="sh-ico">👥</div>
+        <div><div class="sh-t">Целевая аудитория<span class="req"> *</span></div>
+        <div class="sh-d">Расскажите, кто будет пользоваться ботом и сколько примерно человек — это влияет на архитектуру и нагрузку системы</div></div>
+      </div>
+      <div class="f">
+        <label class="fl">Описание аудитории:</label>
+        <div class="ta-wrap"><textarea id="audience" placeholder="Например: клиенты салона красоты 25–45 лет, сотрудники отдела продаж"></textarea><button class="ta-done" tabindex="-1">✓</button></div>
+        <div class="err" id="e2">⚠ Расскажите, кто будет пользоваться ботом</div>
+      </div>
+      <div class="f">
+        <label class="fl">Примерное количество пользователей:</label>
+        <input type="number" id="userCount" placeholder="Например: 500" min="1" inputmode="numeric" enterkeyhint="done">
+      </div>
     </div>
 
-    <div class="step-indicator" id="stepIndicator">
-        <div class="step-dot active"></div>
-        <div class="step-dot"></div>
-        <div class="step-dot"></div>
-        <div class="step-dot"></div>
-        <div class="step-dot"></div>
-        <div class="step-dot"></div>
-        <div class="step-dot"></div>
-        <div class="step-dot"></div>
+    <!-- S3: Функционал -->
+    <div class="sec" id="s3">
+      <div class="sh">
+        <div class="sh-ico">⚙️</div>
+        <div><div class="sh-t">Функционал<span class="req"> *</span></div>
+        <div class="sh-d">Отметьте нужные функции — можно несколько. Не бойтесь выбрать «лишнее» — поможем оптимизировать под бюджет</div></div>
+      </div>
+      <div class="cg" id="featG">
+        <div class="c" data-v="profile"><div class="ci">👤</div>Личный кабинет</div>
+        <div class="c" data-v="payment"><div class="ci">💳</div>Оплата</div>
+        <div class="c" data-v="admin"><div class="ci">🛡️</div>Админ-панель</div>
+        <div class="c" data-v="notifications"><div class="ci">🔔</div>Уведомления</div>
+        <div class="c" data-v="integrations"><div class="ci">🔌</div>Интеграции</div>
+        <div class="c" data-v="referral"><div class="ci">🎁</div>Рефералка</div>
+        <div class="c" data-v="multilang"><div class="ci">🌍</div>Мультиязык</div>
+        <div class="c" data-v="analytics"><div class="ci">📊</div>Статистика</div>
+        <div class="c" data-v="miniapp"><div class="ci">📱</div>Mini App</div>
+      </div>
+      <div class="err" id="e3">⚠ Выберите хотя бы одну функцию</div>
+      <div class="hr"></div>
+      <div class="f">
+        <label class="fl">Другие пожелания:</label>
+        <div class="ta-wrap"><textarea id="addFeatures" placeholder="Например: PDF-чеки, интеграция с Яндекс.Картами"></textarea><button class="ta-done" tabindex="-1">✓</button></div>
+      </div>
     </div>
 
-    <!-- FIX #4: id="botForm" совпадает с JS -->
-    <form id="botForm" novalidate>
-        <div class="form-wrapper" id="formWrapper">
-
-            <!-- Шаг 1: Тип бота -->
-            <div class="form-section active" id="section1">
-                <div class="section-title"><i class="fas fa-layer-group"></i> Тип бота <span class="required">*</span></div>
-                <div class="section-description">Выберите основное назначение — это поможет точнее оценить задачу</div>
-                <div class="form-group">
-                    <select id="botType">
-                        <option value="">Выберите тип бота...</option>
-                        <option value="booking">📅 Запись / бронирование</option>
-                        <option value="shop">🛒 Магазин / каталог</option>
-                        <option value="delivery">🚚 Доставка</option>
-                        <option value="education">🎓 Обучение / тесты</option>
-                        <option value="support">💬 Поддержка / FAQ</option>
-                        <option value="broadcast">📢 Рассылки</option>
-                        <option value="internal">🏢 Внутренние задачи</option>
-                        <option value="other">✨ Другое</option>
-                    </select>
-                    <div class="error-msg" id="botTypeError">Пожалуйста, выберите тип бота</div>
-                </div>
-                <div class="form-group" id="otherTypeGroup" style="display:none">
-                    <label class="field-label">Уточните тип:</label>
-                    <textarea id="otherTypeDesc" placeholder="Например: бот для автоматизации отчётности"></textarea>
-                </div>
-            </div>
-
-            <!-- Шаг 2: Аудитория -->
-            <div class="form-section" id="section2">
-                <div class="section-title"><i class="fas fa-users"></i> Целевая аудитория <span class="required">*</span></div>
-                <div class="section-description">Кто будет пользоваться ботом и сколько примерно человек?</div>
-                <div class="form-group">
-                    <label class="field-label">Описание аудитории:</label>
-                    <textarea id="targetAudience" placeholder="Например: клиенты салона красоты, 25–45 лет"></textarea>
-                    <div class="error-msg" id="audienceError">Расскажите, кто будет пользоваться ботом</div>
-                </div>
-                <div class="form-group">
-                    <label class="field-label">Примерное количество пользователей:</label>
-                    <input type="number" id="userCount" placeholder="Например: 500" min="1">
-                </div>
-            </div>
-
-            <!-- Шаг 3: Функционал -->
-            <div class="form-section" id="section3">
-                <div class="section-title"><i class="fas fa-cogs"></i> Функционал <span class="required">*</span></div>
-                <div class="section-description">Отметьте нужные функции — можно выбрать несколько</div>
-                <div class="checkbox-grid" id="featuresGrid">
-                    <div class="check-card" data-value="profile"><i class="fas fa-user-circle"></i>Личный кабинет</div>
-                    <div class="check-card" data-value="payment"><i class="fas fa-credit-card"></i>Оплата</div>
-                    <div class="check-card" data-value="admin"><i class="fas fa-shield-alt"></i>Админ-панель</div>
-                    <div class="check-card" data-value="notifications"><i class="fas fa-bell"></i>Уведомления</div>
-                    <div class="check-card" data-value="integrations"><i class="fas fa-plug"></i>Интеграции</div>
-                    <div class="check-card" data-value="referral"><i class="fas fa-gift"></i>Рефералка</div>
-                    <div class="check-card" data-value="multilang"><i class="fas fa-language"></i>Мультиязычность</div>
-                    <div class="check-card" data-value="analytics"><i class="fas fa-chart-bar"></i>Статистика</div>
-                    <div class="check-card" data-value="miniapp"><i class="fas fa-mobile-alt"></i>Mini App</div>
-                </div>
-                <div class="error-msg" id="featuresError">Выберите хотя бы одну функцию</div>
-                <div class="form-group" style="margin-top:16px">
-                    <label class="field-label">Другие пожелания:</label>
-                    <textarea id="additionalFeatures" placeholder="Например: генерация PDF-чеков, интеграция с Яндекс.Картами"></textarea>
-                </div>
-            </div>
-
-            <!-- Шаг 4: Платформа -->
-            <div class="form-section" id="section4">
-                <div class="section-title"><i class="fas fa-server"></i> Платформа запуска <span class="required">*</span></div>
-                <!-- FIX #5: исправлена опечатка в section-description -->
-                <div class="section-description">Где будет работать бот? От этого зависит сложность развёртывания</div>
-                <div class="radio-group" id="platformGroup">
-                    <div class="radio-card" data-group="platform" data-value="local">💻 Локально (ваш ПК)</div>
-                    <div class="radio-card" data-group="platform" data-value="vps">☁️ VPS / сервер (24/7)</div>
-                    <div class="radio-card" data-group="platform" data-value="unknown">❓ Не знаю — посоветуйте</div>
-                </div>
-                <div class="error-msg" id="platformError">Выберите платформу запуска</div>
-                <div id="osGroup" style="display:none; margin-top:16px">
-                    <label class="field-label">Операционная система:</label>
-                    <div class="radio-group">
-                        <div class="radio-card" data-group="os" data-value="windows">🪟 Windows</div>
-                        <div class="radio-card" data-group="os" data-value="mac">🍎 macOS</div>
-                        <div class="radio-card" data-group="os" data-value="linux">🐧 Linux</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Шаг 5: Интеграции -->
-            <div class="form-section" id="section5">
-                <div class="section-title"><i class="fas fa-link"></i> Интеграции</div>
-                <div class="section-description">Какие внешние сервисы нужно подключить?</div>
-                <div class="checkbox-grid" id="integrationsGrid">
-                    <div class="check-card" data-value="crm"><i class="fas fa-sitemap"></i>CRM</div>
-                    <div class="check-card" data-value="google_sheets"><i class="fab fa-google"></i>Google Sheets</div>
-                    <div class="check-card" data-value="1c"><i class="fas fa-cube"></i>1С</div>
-                    <div class="check-card" data-value="payment_sys"><i class="fas fa-money-check-alt"></i>Платежи</div>
-                    <div class="check-card" data-value="telegram_api"><i class="fab fa-telegram"></i>Telegram API</div>
-                    <div class="check-card" data-value="none"><i class="fas fa-times-circle"></i>Не нужны</div>
-                </div>
-                <div class="form-group" style="margin-top:16px">
-                    <label class="field-label">Другие сервисы:</label>
-                    <textarea id="customIntegrations" placeholder="Например: Битрикс24, Яндекс.Метрика, amoCRM"></textarea>
-                </div>
-            </div>
-
-            <!-- Шаг 6: Команды -->
-            <div class="form-section" id="section6">
-                <div class="section-title"><i class="fas fa-terminal"></i> Команды бота</div>
-                <div class="section-description">Какие команды должны быть доступны пользователям?</div>
-                <div class="checkbox-grid" id="commandsGrid">
-                    <div class="check-card selected" data-value="start"><i class="fas fa-play"></i>/start</div>
-                    <div class="check-card" data-value="help"><i class="fas fa-question"></i>/help</div>
-                    <div class="check-card" data-value="menu"><i class="fas fa-bars"></i>/menu</div>
-                    <div class="check-card" data-value="settings"><i class="fas fa-cog"></i>/settings</div>
-                    <div class="check-card" data-value="profile"><i class="fas fa-user"></i>/profile</div>
-                    <div class="check-card" data-value="cancel"><i class="fas fa-ban"></i>/cancel</div>
-                </div>
-                <div class="form-group" style="margin-top:16px">
-                    <label class="field-label">Свои команды:</label>
-                    <textarea id="customCommands" placeholder="/book — записаться, /status — статус заказа"></textarea>
-                </div>
-                <!-- FIX #3: правильный toggle без конфликта классов -->
-                <div class="toggle-row" onclick="toggleSwitch('botFatherToggle')">
-                    <span class="toggle-label">⚙️ Настроить команды через @BotFather</span>
-                    <div class="toggle-track on" id="botFatherToggle">
-                        <div class="toggle-thumb"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Шаг 7: Дизайн -->
-            <div class="form-section" id="section7">
-                <div class="section-title"><i class="fas fa-palette"></i> Дизайн и интерфейс</div>
-                <div class="section-description">Как должен выглядеть и работать ваш бот?</div>
-                <div class="form-group">
-                    <label class="field-label">Основной интерфейс:</label>
-                    <div class="radio-group">
-                        <div class="radio-card selected" data-group="interface" data-value="buttons">🔲 Кнопки</div>
-                        <div class="radio-card" data-group="interface" data-value="text">⌨️ Текст</div>
-                        <div class="radio-card" data-group="interface" data-value="mixed">🔀 Смешанный</div>
-                    </div>
-                </div>
-                <div class="toggle-row" onclick="toggleSwitch('miniAppToggle', 'miniAppDetails')">
-                    <span class="toggle-label">📱 Нужен кастомный интерфейс (Mini App)?</span>
-                    <div class="toggle-track" id="miniAppToggle">
-                        <div class="toggle-thumb"></div>
-                    </div>
-                </div>
-                <div id="miniAppDetails" style="display:none">
-                    <div class="form-group">
-                        <label class="field-label">Описание интерфейса:</label>
-                        <textarea id="miniAppDesc" placeholder="Например: форма бронирования с календарём, каталог товаров"></textarea>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="field-label">Стиль и пожелания:</label>
-                    <textarea id="designPrefs" placeholder="Цвета бренда, примеры похожих ботов, особые требования"></textarea>
-                </div>
-            </div>
-
-            <!-- Шаг 8: Сроки и бюджет -->
-            <div class="form-section" id="section8">
-                <div class="section-title"><i class="fas fa-clock"></i> Сроки и бюджет</div>
-                <div class="section-description">Ваши ожидания по времени и стоимости</div>
-                <div class="form-group">
-                    <label class="field-label">Желаемый срок:</label>
-                    <input type="text" id="deadline" placeholder="Например: 2 недели, до 15 июня">
-                </div>
-                <div class="form-group">
-                    <label class="field-label">Ориентировочный бюджет:</label>
-                    <div class="budget-row">
-                        <input type="number" id="budgetFrom" placeholder="От ₽" min="0">
-                        <input type="number" id="budgetTo" placeholder="До ₽" min="0">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="field-label">Дополнительно:</label>
-                    <textarea id="additionalInfo" placeholder="Особые пожелания, примеры ботов которые нравятся, что важно"></textarea>
-                </div>
-            </div>
-
-        </div><!-- /form-wrapper -->
-
-        <!-- Экран успеха -->
-        <div class="success-screen" id="successScreen">
-            <i class="fas fa-check-circle"></i>
-            <h2>Анкета отправлена!</h2>
-            <p>Скоро напишу вам с расчётом стоимости 😊</p>
+    <!-- S4: Платформа -->
+    <div class="sec" id="s4">
+      <div class="sh">
+        <div class="sh-ico">🖥️</div>
+        <div><div class="sh-t">Платформа запуска<span class="req"> *</span></div>
+        <div class="sh-d">Где будет работать бот? От этого зависит сложность развёртывания и стоимость поддержки</div></div>
+      </div>
+      <div class="cg cg-1" id="platG">
+        <div class="c h" data-radio data-g="platform" data-v="local">
+          <div class="ci">💻</div>
+          <div class="ct">Локально (ваш компьютер)<div class="cs">Бесплатно, но работает пока ПК включён</div></div>
         </div>
-
-    </form><!-- /botForm -->
-
-    <div class="btn-group" id="btnGroup">
-        <button type="button" class="btn btn-secondary" id="prevBtn" style="display:none" onclick="goBack()">
-            <i class="fas fa-arrow-left"></i> Назад
-        </button>
-        <button type="button" class="btn btn-primary" id="nextBtn" onclick="goNext()">
-            Далее <i class="fas fa-arrow-right"></i>
-        </button>
-        <button type="button" class="btn btn-primary" id="submitBtn" style="display:none" onclick="submitForm()">
-            <i class="fas fa-paper-plane"></i> Отправить анкету
-        </button>
+        <div class="c h" data-radio data-g="platform" data-v="vps">
+          <div class="ci">☁️</div>
+          <div class="ct">VPS / сервер (24/7 онлайн)<div class="cs">~300–700 руб/мес, бот всегда доступен</div></div>
+        </div>
+        <div class="c h" data-radio data-g="platform" data-v="unknown">
+          <div class="ci">❓</div>
+          <div class="ct">Не знаю — посоветуйте<div class="cs">Мы подберём оптимальный вариант</div></div>
+        </div>
+      </div>
+      <div class="err" id="e4">⚠ Выберите платформу запуска</div>
+      <div id="osWrap" style="display:none">
+        <div class="hr"></div>
+        <label class="fl">Ваша операционная система:</label>
+        <div class="cg" id="osG" style="margin-top:8px">
+          <div class="c" data-radio data-g="os" data-v="windows"><div class="ci">🪟</div>Windows</div>
+          <div class="c" data-radio data-g="os" data-v="mac"><div class="ci">🍎</div>macOS</div>
+          <div class="c" data-radio data-g="os" data-v="linux"><div class="ci">🐧</div>Linux</div>
+        </div>
+      </div>
     </div>
+
+    <!-- S5: Интеграции -->
+    <div class="sec" id="s5">
+      <div class="sh">
+        <div class="sh-ico">🔗</div>
+        <div><div class="sh-t">Интеграции</div>
+        <div class="sh-d">Какие внешние сервисы нужно подключить? Это сильно влияет на сложность и сроки разработки</div></div>
+      </div>
+      <div class="cg" id="intG">
+        <div class="c" data-v="crm"><div class="ci">🗄️</div>CRM</div>
+        <div class="c" data-v="google_sheets"><div class="ci">📋</div>Google Sheets</div>
+        <div class="c" data-v="1c"><div class="ci">📦</div>1С</div>
+        <div class="c" data-v="payment_sys"><div class="ci">💰</div>Платежи</div>
+        <div class="c" data-v="tg_api"><div class="ci">✈️</div>Telegram API</div>
+        <div class="c" data-v="none"><div class="ci">🚫</div>Не нужны</div>
+      </div>
+      <div class="hr"></div>
+      <div class="f">
+        <label class="fl">Другие сервисы:</label>
+        <div class="ta-wrap"><textarea id="customInt" placeholder="Например: Битрикс24, Яндекс.Метрика, amoCRM"></textarea><button class="ta-done" tabindex="-1">✓</button></div>
+      </div>
+    </div>
+
+    <!-- S6: Команды -->
+    <div class="sec" id="s6">
+      <div class="sh">
+        <div class="sh-ico">⌨️</div>
+        <div><div class="sh-t">Команды бота</div>
+        <div class="sh-d">Какие команды должны быть доступны? Стандартные уже включены — просто добавьте свои если нужны</div></div>
+      </div>
+      <div class="cg" id="cmdG">
+        <div class="c on" data-v="start"><div class="ci">▶️</div>/start</div>
+        <div class="c" data-v="help"><div class="ci">❓</div>/help</div>
+        <div class="c" data-v="menu"><div class="ci">☰</div>/menu</div>
+        <div class="c" data-v="settings"><div class="ci">⚙️</div>/settings</div>
+        <div class="c" data-v="profile"><div class="ci">👤</div>/profile</div>
+        <div class="c" data-v="cancel"><div class="ci">🚫</div>/cancel</div>
+      </div>
+      <div class="hr"></div>
+      <div class="f">
+        <label class="fl">Свои команды:</label>
+        <div class="ta-wrap"><textarea id="customCmds" placeholder="/book — записаться&#10;/status — статус заказа"></textarea><button class="ta-done" tabindex="-1">✓</button></div>
+      </div>
+      <div class="tg-row" id="tgBotFather" onclick="toggleRow(this,'tgBotFather')">
+        <div class="tg-lbl">⚙️ Настроить команды через @BotFather</div>
+        <div class="tg-trk"><div class="tg-thm"></div></div>
+      </div>
+    </div>
+
+    <!-- S7: Дизайн -->
+    <div class="sec" id="s7">
+      <div class="sh">
+        <div class="sh-ico">🎨</div>
+        <div><div class="sh-t">Дизайн и интерфейс</div>
+        <div class="sh-d">Как должен выглядеть ваш бот? От этого зависит удобство пользователей и их лояльность</div></div>
+      </div>
+      <label class="fl">Основной интерфейс:</label>
+      <div class="cg cg-1" id="ifG" style="margin-top:8px; margin-bottom:14px">
+        <div class="c h on" data-radio data-g="interface" data-v="buttons">
+          <div class="ci">⊞</div>
+          <div class="ct">Кнопки <div class="cs">Inline и Reply клавиатуры</div></div>
+        </div>
+        <div class="c h" data-radio data-g="interface" data-v="text">
+          <div class="ci">⌨️</div>
+          <div class="ct">Текстовые команды <div class="cs">Ввод вручную</div></div>
+        </div>
+        <div class="c h" data-radio data-g="interface" data-v="mixed">
+          <div class="ci">🔀</div>
+          <div class="ct">Смешанный <div class="cs">Кнопки + текст</div></div>
+        </div>
+      </div>
+      <div class="tg-row" id="tgMiniApp" onclick="toggleRow(this,'tgMiniApp','miniAppDetails')">
+        <div class="tg-lbl">📱 Нужен кастомный интерфейс (Mini App)?</div>
+        <div class="tg-trk"><div class="tg-thm"></div></div>
+      </div>
+      <div id="miniAppDetails" style="display:none" class="f">
+        <label class="fl">Описание интерфейса:</label>
+        <div class="ta-wrap"><textarea id="miniAppDesc" placeholder="Например: форма бронирования с календарём, каталог с корзиной"></textarea><button class="ta-done" tabindex="-1">✓</button></div>
+      </div>
+      <div class="f">
+        <label class="fl">Пожелания по стилю:</label>
+        <div class="ta-wrap"><textarea id="designPrefs" placeholder="Цвета бренда, примеры похожих ботов, особые требования"></textarea><button class="ta-done" tabindex="-1">✓</button></div>
+      </div>
+    </div>
+
+    <!-- S8: Сроки -->
+    <div class="sec" id="s8">
+      <div class="sh">
+        <div class="sh-ico">🗓️</div>
+        <div><div class="sh-t">Сроки и бюджет</div>
+        <div class="sh-d">Ваши ожидания по времени и стоимости помогут предложить оптимальный план работы</div></div>
+      </div>
+      <div class="f">
+        <label class="fl">Желаемый срок:</label>
+        <input type="text" id="deadline" placeholder="Например: 2 недели, до 15 июня" inputmode="text" enterkeyhint="done">
+      </div>
+      <div class="f">
+        <label class="fl">Ориентировочный бюджет:</label>
+        <div class="row2">
+          <input type="number" id="budgetFrom" placeholder="От ₽" min="0" inputmode="numeric" enterkeyhint="next">
+          <input type="number" id="budgetTo"   placeholder="До ₽" min="0" inputmode="numeric" enterkeyhint="done">
+        </div>
+      </div>
+      <div class="f">
+        <label class="fl">Дополнительная информация:</label>
+        <div class="ta-wrap"><textarea id="addInfo" placeholder="Особые пожелания, примеры ботов которые нравятся, что важно учесть"></textarea><button class="ta-done" tabindex="-1">✓</button></div>
+      </div>
+    </div>
+
+    <!-- SUCCESS -->
+    <div class="success" id="successScreen">
+      <div class="s-circle">✅</div>
+      <div class="s-title">Анкета отправлена!</div>
+      <div class="s-desc">Спасибо! Напишем вам с расчётом стоимости — обычно это занимает до 1 часа 😊</div>
+    </div>
+
+  </div><!-- /scroll -->
+
+  <!-- NAV -->
+  <div class="nav" id="nav">
+    <button class="btn btn-back" id="btnBack" onclick="goBack()" style="display:none">← Назад</button>
+    <button class="btn btn-next"   id="btnNext"   onclick="goNext()">Далее →</button>
+    <button class="btn btn-sub"    id="btnSubmit" onclick="submit()" style="display:none">✅ Отправить</button>
+  </div>
+
 </div>
 
 <script>
-    // ── Telegram WebApp ──────────────────────────────────────────
-    const tg = window.Telegram?.WebApp;
-    if (tg) { tg.expand(); tg.ready(); }
+const tg = window.Telegram?.WebApp;
+if (tg) { tg.expand(); tg.ready(); tg.enableClosingConfirmation?.(); }
 
-    // ── Состояние ───────────────────────────────────────────────
-    // FIX #6: currentSection задаётся один раз, showSection не сбрасывает его через setTimeout
-    let currentSection = 1;
-    const TOTAL = 8;
+// ── State ──────────────────────────────────────────────
+let cur = 1;
+const TOTAL = 8;
+const radio  = { platform:'', os:'', interface:'buttons' };
+const toggle = { tgBotFather:false, tgMiniApp:false };
 
-    // Выбранные значения (radio-группы)
-    const radioState = { platform: '', os: '', interface: 'buttons' };
-
-    // ── Toggle switches ──────────────────────────────────────────
-    function toggleSwitch(trackId, detailsId) {
-        const track = document.getElementById(trackId);
-        track.classList.toggle('on');
-        if (detailsId) {
-            const el = document.getElementById(detailsId);
-            el.style.display = track.classList.contains('on') ? 'block' : 'none';
-        }
+// ── Card click handlers ────────────────────────────────
+document.querySelectorAll('.c').forEach(c => {
+  c.addEventListener('click', () => {
+    if (c.dataset.radio !== undefined) {
+      const g = c.dataset.g;
+      document.querySelectorAll(`.c[data-g="${g}"]`).forEach(x => x.classList.remove('on'));
+      c.classList.add('on');
+      radio[g] = c.dataset.v;
+      if (g === 'platform') {
+        document.getElementById('osWrap').style.display = c.dataset.v === 'local' ? 'block' : 'none';
+      }
+    } else {
+      c.classList.toggle('on');
     }
+  });
+});
 
-    // ── Check-cards (мультивыбор) ────────────────────────────────
-    // FIX #2: клик напрямую на div, никакого конфликта с input внутри label
-    document.querySelectorAll('.check-card').forEach(card => {
-        card.addEventListener('click', () => {
-            card.classList.toggle('selected');
-        });
-    });
+// ── Toggle ─────────────────────────────────────────────
+function toggleRow(el, id, detailId) {
+  el.classList.toggle('on');
+  toggle[id] = el.classList.contains('on');
+  if (detailId) document.getElementById(detailId).style.display = toggle[id] ? 'block' : 'none';
+}
 
-    // ── Radio-cards (одиночный выбор) ────────────────────────────
-    document.querySelectorAll('.radio-card').forEach(card => {
-        card.addEventListener('click', () => {
-            const group = card.dataset.group;
-            document.querySelectorAll(`.radio-card[data-group="${group}"]`)
-                    .forEach(c => c.classList.remove('selected'));
-            card.classList.add('selected');
-            radioState[group] = card.dataset.value;
+// ── Other type show/hide ───────────────────────────────
+document.getElementById('botType').addEventListener('change', e => {
+  document.getElementById('otherWrap').style.display = e.target.value === 'other' ? 'block' : 'none';
+});
 
-            // Показать выбор ОС при локальной платформе
-            if (group === 'platform') {
-                document.getElementById('osGroup').style.display =
-                    card.dataset.value === 'local' ? 'block' : 'none';
-            }
-        });
-    });
+// ── UI sync ────────────────────────────────────────────
+function sync() {
+  document.getElementById('progFill').style.width = (cur / TOTAL * 100) + '%';
+  document.getElementById('stepBadge').textContent = cur + '/' + TOTAL;
+  document.getElementById('stepLabel').textContent  = 'Шаг ' + cur + ' из ' + TOTAL;
+  document.querySelectorAll('.dot').forEach((d, i) => {
+    d.className = 'dot' + (i+1 === cur ? ' active' : i+1 < cur ? ' done' : '');
+  });
+  document.getElementById('btnBack').style.display   = cur > 1      ? 'flex' : 'none';
+  document.getElementById('btnNext').style.display   = cur < TOTAL  ? 'flex' : 'none';
+  document.getElementById('btnSubmit').style.display = cur === TOTAL ? 'flex' : 'none';
+}
 
-    // ── Показать/скрыть "другой тип" ─────────────────────────────
-    document.getElementById('botType').addEventListener('change', e => {
-        document.getElementById('otherTypeGroup').style.display =
-            e.target.value === 'other' ? 'block' : 'none';
-    });
+// ── Navigation ─────────────────────────────────────────
+function goto(n) {
+  document.getElementById('s' + cur).className = 'sec';
+  const next = document.getElementById('s' + n);
+  next.className = 'sec active' + (n < cur ? ' back' : '');
+  cur = n;
+  sync();
+  document.getElementById('scrollArea').scrollTo({ top: 0, behavior: 'smooth' });
+}
 
-    // ── Обновление прогресса ─────────────────────────────────────
-    function updateUI() {
-        // Прогресс-бар
-        const pct = (currentSection / TOTAL) * 100;
-        document.getElementById('progressBar').style.width = pct + '%';
+// ── Validation ─────────────────────────────────────────
+function ok(id) { document.getElementById(id)?.classList.remove('on'); }
+function fail(id) { document.getElementById(id)?.classList.add('on'); return false; }
 
-        // Точки
-        document.querySelectorAll('.step-dot').forEach((dot, i) => {
-            dot.classList.toggle('active', i < currentSection);
-        });
+function validate(s) {
+  if (s === 1) {
+    if (!document.getElementById('botType').value) return fail('e1');
+    ok('e1');
+  }
+  if (s === 2) {
+    if (!document.getElementById('audience').value.trim()) return fail('e2');
+    ok('e2');
+  }
+  if (s === 3) {
+    if (!document.querySelectorAll('#featG .c.on').length) return fail('e3');
+    ok('e3');
+  }
+  if (s === 4) {
+    if (!radio.platform) return fail('e4');
+    ok('e4');
+  }
+  return true;
+}
 
-        // Кнопки
-        document.getElementById('prevBtn').style.display = currentSection > 1 ? 'flex' : 'none';
-        document.getElementById('nextBtn').style.display = currentSection < TOTAL ? 'flex' : 'none';
-        document.getElementById('submitBtn').style.display = currentSection === TOTAL ? 'flex' : 'none';
-    }
+function goNext() { if (validate(cur) && cur < TOTAL) goto(cur + 1); }
+function goBack() { if (cur > 1) goto(cur - 1); }
 
-    // ── Переход к секции ─────────────────────────────────────────
-    // FIX #6: нет setTimeout с изменением currentSection — всё синхронно
-    function goToSection(next) {
-        const cur = document.getElementById('section' + currentSection);
-        const nxt = document.getElementById('section' + next);
+// ── Collect ────────────────────────────────────────────
+const checked = id => [...document.querySelectorAll('#' + id + ' .c.on')].map(c => c.dataset.v);
+const val = id => document.getElementById(id)?.value || '';
 
-        if (next > currentSection) {
-            cur.classList.remove('active');
-            cur.classList.add('prev');
-            nxt.style.transform = 'translateX(100%)';
-            nxt.style.opacity = '0';
-            nxt.classList.add('active');
-            // Запускаем анимацию через rAF чтобы браузер увидел начальное состояние
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    nxt.style.transform = '';
-                    nxt.style.opacity = '';
-                });
-            });
-        } else {
-            cur.classList.remove('active');
-            cur.style.transform = 'translateX(100%)';
-            cur.style.opacity = '0';
-            nxt.classList.remove('prev');
-            nxt.classList.add('active');
-            nxt.style.transform = 'translateX(-100%)';
-            nxt.style.opacity = '0';
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    nxt.style.transform = '';
-                    nxt.style.opacity = '';
-                    cur.style.transform = '';
-                    cur.style.opacity = '';
-                });
-            });
-        }
+function collect() {
+  return {
+    botType:       val('botType'),
+    otherTypeDesc: val('otherDesc'),
+    targetAudience:val('audience'),
+    userCount:     val('userCount'),
+    features:      checked('featG'),
+    addFeatures:   val('addFeatures'),
+    platform:      radio.platform,
+    os:            radio.os,
+    integrations:  checked('intG'),
+    customInt:     val('customInt'),
+    commands:      checked('cmdG'),
+    customCmds:    val('customCmds'),
+    botFatherSetup:toggle.tgBotFather,
+    interface:     radio.interface,
+    needMiniApp:   toggle.tgMiniApp,
+    miniAppDesc:   val('miniAppDesc'),
+    designPrefs:   val('designPrefs'),
+    deadline:      val('deadline'),
+    budgetFrom:    val('budgetFrom'),
+    budgetTo:      val('budgetTo'),
+    addInfo:       val('addInfo'),
+  };
+}
 
-        currentSection = next;
-        updateUI();
+// ── Submit ─────────────────────────────────────────────
+function submit() {
+  if (!validate(cur)) return;
+  const data = collect();
+  document.getElementById('s' + cur).style.display = 'none';
+  document.getElementById('successScreen').classList.add('on');
+  document.getElementById('nav').style.display = 'none';
+  document.getElementById('dotsWrap').style.display = 'none';
+  document.getElementById('progFill').style.width = '100%';
+  document.getElementById('stepBadge').textContent = '✓';
+  document.getElementById('stepLabel').textContent  = 'Готово!';
+  if (tg) {
+    tg.sendData(JSON.stringify(data));
+    setTimeout(() => tg.close(), 2800);
+  } else {
+    console.log('Form data:', data);
+  }
+}
 
-        // Скролл наверх
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+sync();
 
-    // ── Валидация ────────────────────────────────────────────────
-    function validate(step) {
-        let ok = true;
+// ── Скрытие клавиатуры ─────────────────────────────────
 
-        function showError(id) {
-            const el = document.getElementById(id);
-            el.style.display = 'block';
-            el.classList.remove('shake');
-            void el.offsetWidth; // reflow
-            el.classList.add('shake');
-            ok = false;
-        }
-        function hideError(id) {
-            document.getElementById(id).style.display = 'none';
-        }
+// input: Enter = blur
+document.querySelectorAll('input[type="text"], input[type="number"]').forEach(inp => {
+  inp.setAttribute('enterkeyhint', inp.getAttribute('enterkeyhint') || 'done');
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); inp.blur(); }
+  });
+});
 
-        if (step === 1) {
-            if (!document.getElementById('botType').value) showError('botTypeError');
-            else hideError('botTypeError');
-        }
-        if (step === 2) {
-            if (!document.getElementById('targetAudience').value.trim()) showError('audienceError');
-            else hideError('audienceError');
-        }
-        if (step === 3) {
-            if (!document.querySelectorAll('#featuresGrid .check-card.selected').length) showError('featuresError');
-            else hideError('featuresError');
-        }
-        if (step === 4) {
-            if (!radioState.platform) showError('platformError');
-            else hideError('platformError');
-        }
+// textarea: кнопка ✓ появляется при фокусе
+document.querySelectorAll('.ta-wrap').forEach(wrap => {
+  const ta  = wrap.querySelector('textarea');
+  const btn = wrap.querySelector('.ta-done');
+  ta.addEventListener('focus', () => wrap.classList.add('focused'));
+  ta.addEventListener('blur',  () => setTimeout(() => wrap.classList.remove('focused'), 150));
+  btn.addEventListener('mousedown', e => e.preventDefault());
+  btn.addEventListener('click', () => { ta.blur(); wrap.classList.remove('focused'); });
+});
 
-        return ok;
-    }
-
-    // ── Навигация ────────────────────────────────────────────────
-    function goNext() {
-        if (!validate(currentSection)) return;
-        if (currentSection < TOTAL) goToSection(currentSection + 1);
-    }
-
-    function goBack() {
-        if (currentSection > 1) goToSection(currentSection - 1);
-    }
-
-    // ── Сбор данных ──────────────────────────────────────────────
-    function collectData() {
-        const getChecked = (gridId) =>
-            Array.from(document.querySelectorAll(`#${gridId} .check-card.selected`))
-                 .map(c => c.dataset.value);
-
-        return {
-            botType:            document.getElementById('botType').value,
-            otherTypeDesc:      document.getElementById('otherTypeDesc').value,
-            targetAudience:     document.getElementById('targetAudience').value,
-            userCount:          document.getElementById('userCount').value,
-            features:           getChecked('featuresGrid'),
-            additionalFeatures: document.getElementById('additionalFeatures').value,
-            platform:           radioState.platform,
-            os:                 radioState.os,
-            integrations:       getChecked('integrationsGrid'),
-            customIntegrations: document.getElementById('customIntegrations').value,
-            commands:           getChecked('commandsGrid'),
-            customCommands:     document.getElementById('customCommands').value,
-            botFatherSetup:     document.getElementById('botFatherToggle').classList.contains('on'),
-            interface:          radioState.interface,
-            needMiniApp:        document.getElementById('miniAppToggle').classList.contains('on'),
-            miniAppDesc:        document.getElementById('miniAppDesc').value,
-            designPrefs:        document.getElementById('designPrefs').value,
-            deadline:           document.getElementById('deadline').value,
-            budgetFrom:         document.getElementById('budgetFrom').value,
-            budgetTo:           document.getElementById('budgetTo').value,
-            additionalInfo:     document.getElementById('additionalInfo').value,
-        };
-    }
-
-    // ── Отправка ─────────────────────────────────────────────────
-    function submitForm() {
-        if (!validate(currentSection)) return;
-
-        const data = collectData();
-        const json = JSON.stringify(data);
-
-        if (tg) {
-            tg.sendData(json);
-            document.getElementById('botForm').style.display = 'none';
-            document.getElementById('successScreen').style.display = 'block';
-            document.getElementById('btnGroup').style.display = 'none';
-            setTimeout(() => tg.close(), 2000);
-        } else {
-            // Режим отладки без Telegram
-            console.log('Данные анкеты:', data);
-            document.getElementById('botForm').style.display = 'none';
-            document.getElementById('successScreen').style.display = 'block';
-            document.getElementById('btnGroup').style.display = 'none';
-        }
-    }
-
-    // ── Инициализация ────────────────────────────────────────────
-    updateUI();
+// select: убрать фокус после выбора
+document.querySelectorAll('select').forEach(sel => {
+  sel.addEventListener('change', () => setTimeout(() => sel.blur(), 50));
+});
 </script>
 </body>
 </html>
