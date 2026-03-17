@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Анкета для создания бота</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 30px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #667eea;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 16px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+        }
+        
+        .form-section {
+            margin-bottom: 30px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .form-section:last-child {
+            border-bottom: none;
+        }
+        
+        .section-title {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        .section-description {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        input[type="text"],
+        input[type="number"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .checkbox-item:hover {
+            background: #e8e8e8;
+        }
+        
+        .checkbox-item input[type="checkbox"] {
+            width: auto;
+            margin-right: 10px;
+        }
+        
+        .radio-group {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .radio-item {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .radio-item input[type="radio"] {
+            width: auto;
+            margin-right: 8px;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 14px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+        
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .error-message {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .required {
+            color: #e74c3c;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .mini-app-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        
+        .budget-inputs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📝 Анкета для создания бота</h1>
+            <p>Заполните все поля, чтобы мы создали идеального бота для ваших задач</p>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress" id="progress" style="width: 0%"></div>
+        </div>
+        
+        <form id="botForm">
+            <!-- Блок 1: Тип бота -->
+            <div class="form-section" id="section1">
+                <div class="section-title">1. Тип бота <span class="required">*</span></div>
+                <div class="section-description">Выберите основное назначение вашего бота</div>
+                
+                <div class="form-group">
+                    <select id="botType" required>
+                        <option value="">Выберите тип бота</option>
+                        <option value="booking">Запись/бронирование</option>
+                        <option value="shop">Магазин/каталог</option>
+                        <option value="delivery">Доставка</option>
+                        <option value="education">Обучение/тесты</option>
+                        <option value="support">Поддержка/FAQ</option>
+                        <option value="broadcast">Рассылки</option>
+                        <option value="internal">Внутренние задачи</option>
+                        <option value="other">Другое (описать ниже)</option>
+                    </select>
+                    <div class="error-message" id="botTypeError">Пожалуйста, выберите тип бота</div>
+                </div>
+                
+                <div class="form-group hidden" id="otherTypeGroup">
+                    <label for="otherTypeDescription">Опишите тип бота:</label>
+                    <textarea id="otherTypeDescription" placeholder="Например: бот для автоматизации отчетности"></textarea>
+                </div>
+            </div>
+            
+            <!-- Блок 2: Целевая аудитория -->
+            <div class="form-section hidden" id="section2">
+                <div class="section-title">2. Целевая аудитория <span class="required">*</span></div>
+                <div class="section-description">Кто будет пользоваться ботом и сколько примерно пользователей?</div>
+                
+                <div class="form-group">
+                    <label for="targetAudience">Описание аудитории:</label>
+                    <textarea id="targetAudience" required placeholder="Например: клиенты салона красоты, сотрудники компании, студенты онлайн-курса"></textarea>
+                    <div class="error-message" id="targetAudienceError">Пожалуйста, опишите целевую аудиторию</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="userCount">Примерное количество пользователей:</label>
+                    <input type="number" id="userCount" placeholder="Например: 500" min="1">
+                </div>
+            </div>
+            
+            <!-- Блок 3: Функционал -->
+            <div class="form-section hidden" id="section3">
+                <div class="section-title">3. Функционал <span class="required">*</span></div>
+                <div class="section-description">Отметьте нужные функции (можно выбрать несколько)</div>
+                
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="featureProfile" name="features" value="profile">
+                        <label for="featureProfile" style="display: inline; margin: 0;">Личный кабинет</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="featurePayment" name="features" value="payment">
+                        <label for="featurePayment" style="display: inline; margin: 0;">Оплата</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="featureAdmin" name="features" value="admin">
+                        <label for="featureAdmin" style="display: inline; margin: 0;">Админ-панель</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="featureNotifications" name="features" value="notifications">
+                        <label for="featureNotifications" style="display: inline; margin: 0;">Уведомления</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="featureIntegrations" name="features" value="integrations">
+                        <label for="featureIntegrations" style="display: inline; margin: 0;">Интеграции</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="featureReferral" name="features" value="referral">
+                        <label for="featureReferral" style="display: inline; margin: 0;">Реферальная система</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="featureMultilang" name="features" value="multilang">
+                        <label for="featureMultilang" style="display: inline; margin: 0;">Многоязычность</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="featureAnalytics" name="features" value="analytics">
+                        <label for="featureAnalytics" style="display: inline; margin: 0;">Статистика</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="featureMiniApp" name="features" value="miniapp">
+                        <label for="featureMiniApp" style="display: inline; margin: 0;">Mini App</label>
+                    </div>
+                </div>
+                
+                <div class="error-message" id="featuresError">Пожалуйста, выберите хотя бы одну функцию</div>
+                
+                <div class="form-group">
+                    <label for="additionalFeatures">Дополнительные функции:</label>
+                    <textarea id="additionalFeatures" placeholder="Опишите другие функции, которые вам нужны"></textarea>
+                </div>
+            </div>
+            
+            <!-- Блок 4: Платформа запуска -->
+            <div class="form-section hidden" id="section4">
+                <div class="section-title">4. Платформа запуска <span class="required">*</span></div>
+                <div class="section-description">Где будет работать ваш бот?</div>
+                
+                <div class="radio-group">
+                    <div class="radio-item">
+                        <input type="radio" id="platformLocal" name="platform" value="local" required>
+                        <label for="platformLocal" style="display: inline; margin: 0;">Локально (компьютер)</label>
+                    </div>
+                    <div class="radio-item">
+                        <input type="radio" id="platformVPS" name="platform" value="vps">
+                        <label for="platformVPS" style="display: inline; margin: 0;">VPS/сервер</label>
+                    </div>
+                    <div class="radio-item">
+                        <input type="radio" id="platformUnknown" name="platform" value="unknown">
+                        <label for="platformUnknown" style="display: inline; margin: 0;">Не знаю</label>
+                    </div>
+                </div>
+                
+                <div class="error-message" id="platformError">Пожалуйста, выберите платформу запуска</div>
+                
+                <div class="form-group hidden" id="localPlatformDetails">
+                    <label>Операционная система:</label>
+                    <div class="radio-group" style="margin-top: 10px;">
+                        <div class="radio-item">
+                            <input type="radio" id="osWindows" name="os" value="windows">
+                            <label for="osWindows" style="display: inline; margin: 0;">Windows</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="osMac" name="os" value="mac">
+                            <label for="osMac" style="display: inline; margin: 0;">Mac</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="osLinux" name="os" value="linux">
+                            <label for="osLinux" style="display: inline; margin: 0;">Linux</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Блок 5: Интеграции -->
+            <div class="form-section hidden" id="section5">
+                <div class="section-title">5. Интеграции</div>
+                <div class="section-description">Какие внешние сервисы нужно подключить?</div>
+                
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="integrationCRM" name="integrations" value="crm">
+                        <label for="integrationCRM" style="display: inline; margin: 0;">CRM</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="integrationGoogleSheets" name="integrations" value="google_sheets">
+                        <label for="integrationGoogleSheets" style="display: inline; margin: 0;">Google Sheets</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="integration1C" name="integrations" value="1c">
+                        <label for="integration1C" style="display: inline; margin: 0;">1C</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="integrationPayment" name="integrations" value="payment">
+                        <label for="integrationPayment" style="display: inline; margin: 0;">Платежные системы</label>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="customIntegrations">Другие интеграции:</label>
+                    <textarea id="customIntegrations" placeholder="Например: Яндекс.Метрика, Битрикс24, ваш внутренний сервис"></textarea>
+                </div>
+            </div>
+            
+            <!-- Блок 6: Команды бота -->
+            <div class="form-section hidden" id="section6">
+                <div class="section-title">6. Команды бота</div>
+                <div class="section-description">Какие команды должны быть доступны пользователям?</div>
+                
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="commandStart" name="commands" value="start" checked>
+                        <label for="commandStart" style="display: inline; margin: 0;">/start</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="commandHelp" name="commands" value="help">
+                        <label for="commandHelp" style="display: inline; margin: 0;">/help</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="commandMenu" name="commands" value="menu">
+                        <label for="commandMenu" style="display: inline; margin: 0;">/menu</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="commandSettings" name="commands" value="settings">
+                        <label for="commandSettings" style="display: inline; margin: 0;">/settings</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="commandProfile" name="commands" value="profile">
+                        <label for="commandProfile" style="display: inline; margin: 0;">/profile</label>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="customCommands">Свои команды:</label>
+                    <textarea id="customCommands" placeholder="Например: /book - записаться, /status - статус заказа"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="botFatherSetup" checked>
+                        Настроить команды через BotFather
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Блок 7: Дизайн и UX -->
+            <div class="form-section hidden" id="section7">
+                <div class="section-title">7. Дизайн и UX</div>
+                <div class="section-description">Как должен выглядеть и работать ваш бот?</div>
+                
+                <div class="form-group">
+                    <label>Интерфейс:</label>
+                    <div class="radio-group">
+                        <div class="radio-item">
+                            <input type="radio" id="interfaceButtons" name="interface" value="buttons" checked>
+                            <label for="interfaceButtons" style="display: inline; margin: 0;">Кнопки</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="interfaceText" name="interface" value="text">
+                            <label for="interfaceText" style="display: inline; margin: 0;">Текстовые команды</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="interfaceMixed" name="interface" value="mixed">
+                            <label for="interfaceMixed" style="display: inline; margin: 0;">Смешанный</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="needMiniApp">
+                        Нужен Mini App с кастомным интерфейсом
+                    </label>
+                </div>
+                
+                <div class="mini-app-section hidden" id="miniAppDetails">
+                    <label for="miniAppDescription">Описание интерфейса Mini App:</label>
+                    <textarea id="miniAppDescription" placeholder="Опишите, как должен выглядеть интерфейс (формы, кнопки, разделы)"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="designPreferences">Предпочтения по дизайну:</label>
+                    <textarea id="designPreferences" placeholder="Цвета, стиль, особые требования к внешнему виду"></textarea>
+                </div>
+            </div>
+            
+            <!-- Блок 8: Дедлайн и бюджет -->
+            <div class="form-section hidden" id="section8">
+                <div class="section-title">8. Дедлайн и бюджет</div>
+                <div class="section-description">Ваши временные рамки и бюджетные ограничения</div>
+                
+                <div class="form-group">
+                    <label for="deadline">Срок сдачи (если есть):</label>
+                    <input type="text" id="deadline" placeholder="Например: 2 недели, 1 месяц">
+                </div>
+                
+                <div class="form-group">
+                    <label for="budget">Ориентировочный бюджет:</label>
+                    <div class="budget-inputs">
+                        <input type="number" id="budgetFrom" placeholder="От" min="0">
+                        <input type="number" id="budgetTo" placeholder="До" min="0">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="additionalInfo">Дополнительная информация:</label>
+                    <textarea id="additionalInfo" placeholder="Любые другие пожелания, требования или комментарии"></textarea>
+                </div>
+            </div>
+            
+            <!-- Кнопки навигации -->
+            <div class="btn-group">
+                <button type="button" class="btn btn-secondary" id="prevBtn" style="display: none;">Назад</button>
+                <button type="button" class="btn btn-primary" id="nextBtn">Далее</button>
+                <button type="submit" class="btn btn-primary" id="submitBtn" style="display: none;">Отправить анкету</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Инициализация Telegram WebApp
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.ready();
+        
+        // Состояние формы
+        let currentSection = 1;
+        const totalSections = 8;
+        
+        // DOM элементы
+        const progress = document.getElementById('progress');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const submitBtn = document.getElementById('submitBtn');
+        const form = document.getElementById('botForm');
+        
+        // Показать секцию
+        function showSection(sectionNumber) {
+            // Скрыть все секции
+            for (let i = 1; i <= totalSections; i++) {
+                document.getElementById(`section${i}`).classList.add('hidden');
+            }
+            
+            // Показать текущую секцию
+            document.getElementById(`section${sectionNumber}`).classList.remove('hidden');
+            
+            // Обновить прогресс
+            progress.style.width = `${((sectionNumber - 1) / totalSections) * 100}%`;
+            
+            // Обновить кнопки
+            if (sectionNumber === 1) {
+                prevBtn.style.display = 'none';
+            } else {
+                prevBtn.style.display = 'block';
+            }
+            
+            if (sectionNumber === totalSections) {
+                nextBtn.style.display = 'none';
+                submitBtn.style.display = 'block';
+            } else {
+                nextBtn.style.display = 'block';
+                submitBtn.style.display = 'none';
+            }
+            
+            currentSection = sectionNumber;
+        }
+        
+        // Валидация секции
+        function validateSection(sectionNumber) {
+            let isValid = true;
+            
+            switch(sectionNumber) {
+                case 1: // Тип бота
+                    const botType = document.getElementById('botType').value;
+                    if (!botType) {
+                        document.getElementById('botTypeError').style.display = 'block';
+                        isValid = false;
+                    } else {
+                        document.getElementById('botTypeError').style.display = 'none';
+                    }
+                    break;
+                    
+                case 2: // Целевая аудитория
+                    const targetAudience = document.getElementById('targetAudience').value.trim();
+                    if (!targetAudience) {
+                        document.getElementById('targetAudienceError').style.display = 'block';
+                        isValid = false;
+                    } else {
+                        document.getElementById('targetAudienceError').style.display = 'none';
+                    }
+                    break;
+                    
+                case 3: // Функционал
+                    const features = document.querySelectorAll('input[name="features"]:checked');
+                    if (features.length === 0) {
+                        document.getElementById('featuresError').style.display = 'block';
+                        isValid = false;
+                    } else {
+                        document.getElementById('featuresError').style.display = 'none';
+                    }
+                    break;
+                    
+                case 4: // Платформа
+                    const platform = document.querySelector('input[name="platform"]:checked');
+                    if (!platform) {
+                        document.getElementById('platformError').style.display = 'block';
+                        isValid = false;
+                    } else {
+                        document.getElementById('platformError').style.display = 'none';
+                    }
+                    break;
+            }
+            
+            return isValid;
+        }
+        
+        // Обработчики кнопок
+        prevBtn.addEventListener('click', () => {
+            if (currentSection > 1) {
+                showSection(currentSection - 1);
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (validateSection(currentSection)) {
+                showSection(currentSection + 1);
+            }
+        });
+        
+        // Обработчик отправки формы
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            if (!validateSection(currentSection)) {
+                return;
+            }
+            
+            // Собрать все данные
+            const formData = {
+                botType: document.getElementById('botType').value,
+                otherTypeDescription: document.getElementById('otherTypeDescription').value,
+                targetAudience: document.getElementById('targetAudience').value,
+                userCount: document.getElementById('userCount').value,
+                features: Array.from(document.querySelectorAll('input[name="features"]:checked')).map(el => el.value),
+                additionalFeatures: document.getElementById('additionalFeatures').value,
+                platform: document.querySelector('input[name="platform"]:checked')?.value,
+                os: document.querySelector('input[name="os"]:checked')?.value,
+                integrations: Array.from(document.querySelectorAll('input[name="integrations"]:checked')).map(el => el.value),
+                customIntegrations: document.getElementById('customIntegrations').value,
+                commands: Array.from(document.querySelectorAll('input[name="commands"]:checked')).map(el => el.value),
+                customCommands: document.getElementById('customCommands').value,
+                botFatherSetup: document.getElementById('botFatherSetup').checked,
+                interface: document.querySelector('input[name="interface"]:checked')?.value,
+                needMiniApp: document.getElementById('needMiniApp').checked,
+                miniAppDescription: document.getElementById('miniAppDescription').value,
+                designPreferences: document.getElementById('designPreferences').value,
+                deadline: document.getElementById('deadline').value,
+                budgetFrom: document.getElementById('budgetFrom').value,
+                budgetTo: document.getElementById('budgetTo').value,
+                additionalInfo: document.getElementById('additionalInfo').value
+            };
+            
+            // Отправить данные через Telegram WebApp
+            tg.sendData(JSON.stringify(formData));
+            
+            // Показать сообщение об успехе
+            tg.showAlert('✅ Анкета отправлена! Алексей свяжется с вами в ближайшее время.');
+            
+            // Закрыть приложение
+            tg.close();
+        });
+        
+        // Показать/скрыть поле "Другое" для типа бота
+        document.getElementById('botType').addEventListener('change', (e) => {
+            const otherTypeGroup = document.getElementById('otherTypeGroup');
+            if (e.target.value === 'other') {
+                otherTypeGroup.classList.remove('hidden');
+            } else {
+                otherTypeGroup.classList.add('hidden');
+            }
+        });
+        
+        // Показать/скрыть детали для локальной платформы
+        document.querySelectorAll('input[name="platform"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                const localPlatformDetails = document.getElementById('localPlatformDetails');
+                if (e.target.value === 'local') {
+                    localPlatformDetails.classList.remove('hidden');
+                } else {
+                    localPlatformDetails.classList.add('hidden');
+                }
+            });
+        });
+        
+        // Показать/скрыть детали для Mini App
+        document.getElementById('needMiniApp').addEventListener('change', (e) => {
+            const miniAppDetails = document.getElementById('miniAppDetails');
+            if (e.target.checked) {
+                miniAppDetails.classList.remove('hidden');
+            } else {
+                miniAppDetails.classList.add('hidden');
+            }
+        });
+        
+        // Начать с первой секции
+        showSection(1);
+    </script>
+</body>
+</html>
