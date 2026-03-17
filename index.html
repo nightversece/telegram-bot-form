@@ -1,5 +1,5 @@
 
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -8,36 +8,31 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
         :root {
             --primary: #6366f1;
             --primary-dark: #4f46e5;
             --secondary: #8b5cf6;
-            --accent: #ec4899;
             --dark: #1e293b;
             --light: #f8fafc;
             --gray: #94a3b8;
             --success: #10b981;
             --error: #ef4444;
-            --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            --radius: 16px;
-            --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            --shadow: 0 4px 20px rgba(0,0,0,0.08);
+            --radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        
+
         body {
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             background: linear-gradient(135deg, #f0f4ff 0%, #e2e8f0 100%);
             min-height: 100vh;
             padding: 16px;
             color: var(--dark);
-            line-height: 1.5;
+            line-height: 1.6;
         }
-        
+
         .container {
             max-width: 700px;
             margin: 0 auto;
@@ -45,1103 +40,822 @@
             border-radius: var(--radius);
             box-shadow: var(--shadow);
             overflow: hidden;
-            position: relative;
         }
-        
+
         .header {
             text-align: center;
             padding: 24px 20px;
             border-bottom: 1px solid #e2e8f0;
-            background: white;
-            position: sticky;
-            top: 0;
-            z-index: 10;
         }
-        
+
         .header h1 {
-            font-size: 28px;
+            font-size: 26px;
             font-weight: 700;
             background: linear-gradient(90deg, var(--primary), var(--secondary));
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
             margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
         }
-        
-        .header p {
-            color: var(--gray);
-            font-size: 16px;
-            max-width: 500px;
-            margin: 0 auto;
-        }
-        
+
+        .header p { color: var(--gray); font-size: 15px; }
+
+        /* ПРОГРЕСС */
         .progress-container {
-            width: 100%;
             height: 6px;
             background: #e2e8f0;
-            position: relative;
-            overflow: hidden;
+            margin: 0;
         }
-        
+
         .progress-bar {
             height: 100%;
             background: linear-gradient(90deg, var(--primary), var(--secondary));
-            width: 0%;
+            width: 12.5%;
             transition: var(--transition);
-            position: relative;
         }
-        
-        /* УБРАЛИ ПРОКРУТКУ - ВЕСЬ КОНТЕНТ ВИДЕН */
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 16px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .step-dot {
+            width: 8px; height: 8px;
+            background: #cbd5e1;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+
+        .step-dot.active {
+            background: var(--primary);
+            transform: scale(1.3);
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.2);
+        }
+
+        /* СЕКЦИИ — FIX: overflow hidden на враппере + relative positioning */
         .form-wrapper {
-            min-height: 450px;
-            padding: 32px 24px;
+            padding: 24px 16px;
+            min-height: 420px;
             position: relative;
             overflow: hidden;
         }
-        
-        /* АНИМАЦИЯ ПЕРЕЛИСТЫВАНИЯ */
+
+        /* FIX #1: исправлен класс .-section.prev → .form-section.prev */
         .form-section {
             position: absolute;
-            width: 100%;
-            padding: 0 8px;
+            top: 24px;
+            left: 16px;
+            right: 16px;
             opacity: 0;
             transform: translateX(100%);
             transition: var(--transition);
             pointer-events: none;
         }
-        
+
         .form-section.active {
             opacity: 1;
             transform: translateX(0);
             pointer-events: all;
-            z-index: 1;
+            position: relative;
+            top: auto; left: auto; right: auto;
         }
-        
+
+        /* FIX #1: правильный класс для анимации назад */
         .form-section.prev {
             opacity: 0;
             transform: translateX(-100%);
         }
-        
+
         .section-title {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 700;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
             color: var(--dark);
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
-        
-        .section-title i {
-            color: var(--primary);
-            font-size: 28px;
-        }
-        
+
+        .section-title i { color: var(--primary); }
+
         .section-description {
             color: var(--gray);
-            font-size: 16px;
-            margin-bottom: 32px;
-            line-height: 1.7;
+            font-size: 14px;
+            margin-bottom: 20px;
             background: #f8fafc;
-            padding: 16px;
-            border-radius: 12px;
-            border-left: 4px solid var(--primary);
+            padding: 12px 16px;
+            border-radius: 10px;
+            border-left: 3px solid var(--primary);
         }
-        
-        .form-group {
-            margin-bottom: 28px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 12px;
-            font-weight: 600;
-            color: var(--dark);
-            font-size: 17px;
+
+        .form-group { margin-bottom: 20px; }
+
+        label.field-label {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 15px;
         }
-        
-        label .required {
-            color: var(--error);
-            font-size: 20px;
-            line-height: 1;
-        }
-        
+
+        .required { color: var(--error); font-size: 16px; }
+
         input[type="text"],
         input[type="number"],
         textarea,
         select {
             width: 100%;
-            padding: 16px;
-            border: 2px solid #cbd5e1;
-            border-radius: 14px;
-            font-size: 17px;
+            padding: 12px 14px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 15px;
             transition: var(--transition);
             background: #f8fafc;
             font-family: inherit;
-            font-weight: 500;
+            color: var(--dark);
         }
-        
+
         input[type="text"]:focus,
         input[type="number"]:focus,
         textarea:focus,
         select:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
             background: white;
         }
-        
-        textarea {
-            min-height: 120px;
-            resize: vertical;
-        }
-        
+
+        textarea { min-height: 90px; resize: vertical; }
+
+        /* ЧЕКБОКСЫ — FIX #2: убраны hidden input внутри label, используем data-value */
         .checkbox-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: 18px;
-            margin-top: 12px;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 12px;
+            margin-top: 8px;
         }
-        
-        .checkbox-item {
+
+        .check-card {
             background: #f8fafc;
-            border: 2px solid #e2e8f0;
-            border-radius: 16px;
-            padding: 20px 12px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 14px 10px;
             text-align: center;
             cursor: pointer;
             transition: var(--transition);
-            font-weight: 600;
-            font-size: 15px;
+            font-size: 13px;
+            font-weight: 500;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 12px;
-            position: relative;
-            overflow: hidden;
+            gap: 8px;
+            user-select: none;
         }
-        
-        .checkbox-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.1), transparent);
-            transition: left 0.3s;
-        }
-        
-        .checkbox-item:hover::before {
-            left: 100%;
-        }
-        
-        .checkbox-item:hover {
+
+        .check-card:hover {
             border-color: var(--primary);
-            transform: translateY(-3px);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
-        
-        .checkbox-item.active {
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(139, 92, 246, 0.12));
+
+        .check-card.selected {
+            background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(139,92,246,0.1));
             border-color: var(--primary);
             color: var(--primary-dark);
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(99,102,241,0.2);
         }
-        
-        .checkbox-item i {
-            font-size: 28px;
+
+        .check-card i {
+            font-size: 20px;
             color: var(--gray);
             transition: var(--transition);
         }
-        
-        .checkbox-item.active i {
-            color: var(--primary);
-            transform: scale(1.15) rotate(5deg);
-        }
-        
-        .checkbox-item input[type="checkbox"] {
-            display: none;
-        }
-        
+
+        .check-card.selected i { color: var(--primary); }
+
+        /* РАДИО */
         .radio-group {
             display: flex;
             flex-wrap: wrap;
-            gap: 20px;
-            margin-top: 16px;
+            gap: 12px;
+            margin-top: 10px;
         }
-        
-        .radio-item {
+
+        .radio-card {
             flex: 1;
-            min-width: 160px;
+            min-width: 130px;
             background: #f8fafc;
-            border: 2px solid #e2e8f0;
-            border-radius: 16px;
-            padding: 20px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 14px 12px;
             text-align: center;
             cursor: pointer;
             transition: var(--transition);
-            font-weight: 600;
-            font-size: 16px;
-            position: relative;
-            overflow: hidden;
+            font-size: 14px;
+            font-weight: 500;
+            user-select: none;
         }
-        
-        .radio-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.1), transparent);
-            transition: left 0.3s;
-        }
-        
-        .radio-item:hover::before {
-            left: 100%;
-        }
-        
-        .radio-item:hover {
+
+        .radio-card:hover {
             border-color: var(--primary);
-            transform: translateY(-3px);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
-        
-        .radio-item.active {
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15));
+
+        .radio-card.selected {
+            background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(139,92,246,0.1));
             border-color: var(--primary);
             color: var(--primary-dark);
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(99,102,241,0.2);
         }
-        
-        .radio-item input[type="radio"] {
-            display: none;
-        }
-        
-        .toggle-switch {
+
+        /* FIX #3: TOGGLE — правильная структура без конфликта классов */
+        .toggle-row {
             display: flex;
             align-items: center;
-            gap: 16px;
-            padding: 16px 0;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 14px;
             background: #f8fafc;
-            border-radius: 14px;
-            padding-left: 20px;
-        }
-        
-        .toggle-switch input[type="checkbox"] {
-            display: none;
-        }
-        
-        .toggle-slider {
-            position: relative;
-            display: inline-block;
-            width: 60px;
-            height: 32px;
-        }
-        
-        .toggle-slider:before {
-            position: absolute;
-            content: "";
-            height: 26px;
-            width: 26px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            border-radius: 50%;
-            transition: var(--transition);
-            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-        }
-        
-        .toggle-switch input:checked + .toggle-slider {
-            background-color: var(--primary);
-        }
-        
-        .toggle-switch input:checked + .toggle-slider:before {
-            transform: translateX(28px);
-        }
-        
-        .toggle-slider {
-            background-color: #cbd5e1;
-            border-radius: 34px;
+            border-radius: 10px;
+            border: 1.5px solid #e2e8f0;
+            margin-bottom: 12px;
             cursor: pointer;
         }
-        
-        .error-message {
-            color: var(--error);
-            font-size: 15px;
-            margin-top: 10px;
-            display: none;
-            animation: shake 0.4s;
-            font-weight: 500;
+
+        .toggle-label { font-size: 14px; font-weight: 500; color: var(--dark); flex: 1; }
+
+        .toggle-track {
+            position: relative;
+            width: 46px;
+            height: 24px;
+            background: #cbd5e1;
+            border-radius: 34px;
+            transition: var(--transition);
+            flex-shrink: 0;
         }
-        
+
+        .toggle-track.on { background: var(--primary); }
+
+        .toggle-thumb {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 18px;
+            height: 18px;
+            background: white;
+            border-radius: 50%;
+            transition: var(--transition);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        }
+
+        .toggle-track.on .toggle-thumb { transform: translateX(22px); }
+
+        /* ОШИБКИ */
+        .error-msg {
+            color: var(--error);
+            font-size: 13px;
+            margin-top: 8px;
+            display: none;
+        }
+
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-6px); }
-            75% { transform: translateX(6px); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
         }
-        
+
+        .shake { animation: shake 0.3s; }
+
+        /* КНОПКИ */
         .btn-group {
-            position: sticky;
-            bottom: 0;
             background: white;
-            padding: 20px 24px;
+            padding: 14px 16px;
             border-top: 1px solid #e2e8f0;
             display: flex;
-            gap: 16px;
-            justify-content: center;
-            flex-wrap: wrap;
-            box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
-            z-index: 20;
+            gap: 12px;
+            box-shadow: 0 -2px 12px rgba(0,0,0,0.05);
         }
-        
+
         .btn {
-            padding: 18px 36px;
+            padding: 14px 24px;
             border: none;
-            border-radius: 16px;
-            font-size: 18px;
-            font-weight: 700;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
             transition: var(--transition);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
             flex: 1;
-            min-width: 150px;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
         }
-        
-        .btn:active {
-            transform: scale(0.97);
-        }
-        
+
+        .btn:active { transform: scale(0.97); }
+
         .btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
             color: white;
+            box-shadow: 0 4px 12px rgba(99,102,241,0.3);
         }
-        
+
         .btn-primary:hover {
-            background: linear-gradient(135deg, var(--primary-dark), #7c3aed);
-            transform: translateY(-3px);
-            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+            background: linear-gradient(90deg, var(--primary-dark), #7c3aed);
+            box-shadow: 0 6px 16px rgba(99,102,241,0.4);
         }
-        
+
         .btn-secondary {
-            background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+            background: #f1f5f9;
             color: var(--dark);
         }
-        
-        .btn-secondary:hover {
-            background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
-            transform: translateY(-3px);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+
+        .btn-secondary:hover { background: #e2e8f0; }
+
+        .budget-row { display: flex; gap: 12px; }
+        .budget-row input { flex: 1; }
+
+        /* УСПЕХ */
+        .success-screen {
+            display: none;
+            text-align: center;
+            padding: 40px 20px;
         }
-        
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none !important;
+
+        .success-screen i {
+            font-size: 56px;
+            color: var(--success);
+            margin-bottom: 16px;
         }
-        
-        .budget-inputs {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-        
-        .budget-inputs input {
-            flex: 1;
-            min-width: 150px;
-        }
-        
-        .step-indicator {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            padding: 20px 24px;
-            background: #f8fafc;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        
-        .step-dot {
-            width: 10px;
-            height: 10px;
-            background: #cbd5e1;
-            border-radius: 50%;
-            transition: var(--transition);
-        }
-        
-        .step-dot.active {
-            background: var(--primary);
-            transform: scale(1.5);
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.25);
-        }
-        
-        @media (max-width: 600px) {
-            .container {
-                border-radius: 20px;
-            }
-            
-            .header {
-                padding: 20px 16px;
-            }
-            
-            .header h1 {
-                font-size: 24px;
-            }
-            
-            .section-title {
-                font-size: 22px;
-            }
-            
-            .checkbox-grid {
-                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-                gap: 14px;
-            }
-            
-            .checkbox-item {
-                padding: 16px 10px;
-                font-size: 14px;
-            }
-            
-            .radio-group {
-                flex-direction: column;
-                gap: 14px;
-            }
-            
-            .radio-item {
-                min-width: 100%;
-            }
-            
-            .btn {
-                padding: 16px;
-                font-size: 17px;
-            }
-            
-            .btn-group {
-                flex-direction: column;
-            }
-            
-            .budget-inputs {
-                flex-direction: column;
-            }
-            
-            .form-wrapper {
-                min-height: 400px;
-                padding: 24px 16px;
-            }
-        }
-        
-        @media (max-width: 400px) {
-            .header h1 {
-                font-size: 22px;
-            }
-            
-            .checkbox-grid {
-                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            }
-            
-            .checkbox-item {
-                padding: 14px 8px;
-                font-size: 13px;
-            }
-            
-            .checkbox-item i {
-                font-size: 24px;
-            }
-            
-            .form-wrapper {
-                min-height: 380px;
-            }
+
+        .success-screen h2 { font-size: 22px; margin-bottom: 8px; }
+        .success-screen p { color: var(--gray); font-size: 15px; }
+
+        /* Адаптив */
+        @media (max-width: 480px) {
+            body { padding: 10px; }
+            .header h1 { font-size: 22px; }
+            .form-wrapper { padding: 18px 14px; min-height: 380px; }
+            .checkbox-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
+            .check-card { padding: 12px 8px; font-size: 12px; }
+            .radio-group { flex-direction: column; }
+            .radio-card { min-width: 100%; }
+            .btn { padding: 13px; font-size: 15px; }
+            .btn-group { flex-direction: column; }
+            .budget-row { flex-direction: column; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1><i class="fas fa-robot"></i> Анкета для бота</h1>
-            <p>8 простых шагов — и мы создадим идеального бота</p>
-        </div>
-        
-        <div class="progress-container">
-            <div class="progress-bar" id="progress"></div>
-        </div>
-        
-        <div class="step-indicator" id="step-indicator">
-            <div class="step-dot active"></div>
-            <div class="step-dot"></div>
-            <div class="step-dot"></div>
-            <div class="step-dot"></div>
-            <div class="step-dot"></div>
-            <div class="step-dot"></div>
-            <div class="step-dot"></div>
-            <div class="step-dot"></div>
-        </div>
-        
-        <div class="form-wrapper">
-            <form id="botForm">
-                <!-- Блок 1: Тип бота -->
-                <div class="form-section active" id="section1">
-                    <div class="section-title"><i class="fas fa-layer-group"></i> Тип бота <span class="required">*</span></div>
-                    <div class="section-description">Выберите основное назначение — это поможет нам точнее оценить вашу задачу и предложить оптимальное решение</div>
-                    
-                    <div class="form-group">
-                        <select id="botType" required>
-                            <option value="">Выберите тип бота</option>
-                            <option value="booking">📅 Запись/бронирование</option>
-                            <option value="shop">🛒 Магазин/каталог</option>
-                            <option value="delivery">🚚 Доставка</option>
-                            <option value="education">🎓 Обучение/тесты</option>
-                            <option value="support">💬 Поддержка/FAQ</option>
-                            <option value="broadcast">📢 Рассылки</option>
-                            <option value="internal">🏢 Внутренние задачи</option>
-                            <option value="other">✨ Другое</option>
-                        </select>
-                        <div class="error-message" id="botTypeError">Пожалуйста, выберите тип бота</div>
-                    </div>
-                    
-                    <div class="form-group" id="otherTypeGroup" style="display: none;">
-                        <label for="otherTypeDescription">Уточните тип бота:</label>
-                        <textarea id="otherTypeDescription" placeholder="Например: бот для автоматизации отчётности в компании"></textarea>
-                    </div>
-                </div>
-                
-                <!-- Блок 2: Целевая аудитория -->
-                <div class="form-section" id="section2">
-                    <div class="section-title"><i class="fas fa-users"></i> Целевая аудитория <span class="required">*</span></div>
-                    <div class="section-description">Расскажите, кто будет пользоваться ботом и сколько примерно человек — это влияет на архитектуру и нагрузку системы</div>
-                    
-                    <div class="form-group">
-                        <label for="targetAudience">Описание аудитории:</label>
-                        <textarea id="targetAudience" required placeholder="Например: клиенты салона красоты 25-45 лет, сотрудники отдела продаж"></textarea>
-                        <div class="error-message" id="targetAudienceError">Расскажите, кто будет пользоваться ботом</div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="userCount">Примерное количество пользователей:</label>
-                        <input type="number" id="userCount" placeholder="Например: 500" min="1">
-                    </div>
-                </div>
-                
-                <!-- Блок 3: Функционал -->
-                <div class="form-section" id="section3">
-                    <div class="section-title"><i class="fas fa-cogs"></i> Функционал <span class="required">*</span></div>
-                    <div class="section-description">Отметьте нужные функции — можно выбрать несколько. Не бойтесь выбрать «лишнее» — мы поможем оптимизировать функционал под ваш бюджет</div>
-                    
-                    <div class="checkbox-grid">
-                        <label class="checkbox-item">
-                            <i class="fas fa-user-circle"></i>
-                            <span>Личный кабинет</span>
-                            <input type="checkbox" name="features" value="profile">
-                        </label>
-                        <label class="checkbox-item">
-                            <i class="fas fa-credit-card"></i>
-                            <span>Оплата</span>
-                            <input type="checkbox" name="features" value="payment">
-                        </label>
-                        <label class="checkbox-item">
-                            <i class="fas fa-shield-alt"></i>
-                            <span>Админ-панель</span>
-                            <input type="checkbox" name="features" value="admin">
-                        </label>
-                        <label class="checkbox-item">
-                            <i class="fas fa-bell"></i>
-                            <span>Уведомления</span>
-                            <input type="checkbox" name="features" value="notifications">
-                        </label>
-                        <label class="checkbox-item">
-                            <i class="fas fa-plug"></i>
-                            <span>Интеграции</span>
-                            <input type="checkbox" name="features" value="integrations">
-                        </label>
-                        <label class="checkbox-item">
-                            <i class="fas fa-gift"></i>
-                            <span>Рефералка</span>
-                            <input type="checkbox" name="features" value="referral">
-                        </label>
-                        <label class="checkbox-item">
-                            <i class="fas fa-language"></i>
-                            <span>Мультиязычность</span>
-                            <input type="checkbox" name="features" value="multilang">
-                        </label>
-                        <label class="checkbox-item">
-                            <i class="fas fa-chart-bar"></i>
-                            <span>Статистика</span>
-                            <input type="checkbox" name="features" value="analytics">
-                        </label>
-                        <label class="checkbox-item">
-                            <i class="fas fa-mobile-alt"></i>
-                            <span>Mini App</span>
-                            <input type="checkbox" name="features" value="miniapp">
-                        </label>
-                    </div>
-                    
-                    <div class="error-message" id="featuresError">Выберите хотя бы одну функцию</div>
-                    
-                    <div class="form-group" style="margin-top: 20px;">
-                        <label for="additionalFeatures">Другие функции или пожелания:</label>
-                        <textarea id="additionalFeatures" placeholder="Например: генерация PDF-чеков, интеграция с Яндекс.Картами, кастомные уведомления"></textarea>
-                    </div>
-                </div>
-                
-                <!-- Блок 4: Платформа запуска -->
-                <div class="form-section" id="section4">
-                    <div class="section-title"><i class="fas fa-server"></i> Платформа запуска <span class="required">*</span></div>
-                    <div class="section-description">Где будет работать бот? От этого зависит сложность развёртывания и стоимость поддержки</div>
-                    
-                    <div class="radio-group">
-                        <label class="radio-item">
-                            <input type="radio" name="platform" value="local" required>
-                            💻 Локально (ваш компьютер)
-                        </label>
-                        <label class="radio-item">
-                            <input type="radio" name="platform" value="vps">
-                            ☁️ VPS/сервер (круглосуточно онлайн)
-                        </label>
-                        <label class="radio-item">
-                            <input type="radio" name="platform" value="unknown">
-                            ❓ Не знаю — посоветуйте
-                        </label>
-                    </div>
-                    
-                    <div class="error-message" id="platformError">Выберите платформу запуска</div>
-                    
-                    <div class="form-group" id="localPlatformDetails" style="display: none; margin-top: 20px;">
-                        <label>Ваша операционная система:</label>
-                        <div class="radio-group" style="margin-top: 12px;">
-                            <label class="radio-item">
-                                <input type="radio" name="os" value="windows">
-                                <i class="fab fa-windows"></i> Windows
-                            </label>
-                            <label class="radio-item">
-                                <input type="radio" name="os" value="mac">
-                                <i class="fab fa-apple"></i> macOS
-                            </label>
-                            <label class="radio-item">
-                                <input type="radio" name="os" value="linux">
-                                <i class="fab fa-linux"></i> Linux
-                            </label>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Блок 5: Интеграции -->
-                <div class="form-section" id="section5">
-                    <div class="section-title"><i class="fas fa-link"></i> Интеграции</div>
-                    <div class="section-description">Какие внешние сервисы нужно подключить? Это сильно влияет на сложность и сроки разработки</div>
-                    
-                    <div class="checkbox-grid">
-                        <label class="checkbox-item">
-                            <i class="fas fa-sitemap"></i>
-                            <span>CRM</span>
-                            <input type="checkbox" name="integrations" value="crm">
-                        </label>
-                        <label class="checkbox-item">
-                            <i class="fab fa-google"></i>
-                            <span>Google Sheets</span>
-                            <input type="checkbox" name="integrations" value="google_sheets">
-                        </label>
-                        <label class="checkbox-item">
-                            <i class="fas fa-cube"></i>
-                            <span>1С</span>
-                            <input type="checkbox" name="integrations" value="1c">
-                        </label>
-                        <label class="checkbox-item">
-                            <i class="fas fa-money-check-alt"></i>
-                            <span>Платежи</span>
-                            <input type="checkbox" name="integrations" value="payment">
-                        </label>
-                    </div>
-                    
-                    <div class="form-group" style="margin-top: 20px;">
-                        <label for="customIntegrations">Другие сервисы:</label>
-                        <textarea id="customIntegrations" placeholder="Например: Битрикс24, Яндекс.Метрика, ваш внутренний API, Telegram-каналы"></textarea>
-                    </div>
-                </div>
-                
-                <!-- Блок 6: Команды бота -->
-                <div class="form-section" id="section6">
-                    <div class="section-title"><i class="fas fa-terminal"></i> Команды бота</div>
-                    <div class="section-description">Какие команды должны быть доступны пользователям? Стандартные уже включены</div>
-                    
-                    <div class="checkbox-grid">
-                        <label class="checkbox-item">
-                            <i class="fas fa-play"></i>
-                            <span>/start</span>
-                            <input type="checkbox" name="commands" value="start" checked>
-                        </label>
-                        <label class="checkbox-item">
-                            <i class="fas fa-question"></i>
-                            <span>/help</span>
-                            <input type="checkbox" name="commands" value="help">
-                        </label>
-                        <label class="checkbox-item">
-                            <i class="fas fa-bars"></i>
-                            <span>/menu</span>
-                            <input type="checkbox" name="commands" value="menu">
-                        </label>
-                        <label class="checkbox-item">
-                            <i class="fas fa-cog"></i>
-                            <span>/settings</span>
-                            <input type="checkbox" name="commands" value="settings">
-                        </label>
-                        <label class="checkbox-item">
-                            <i class="fas fa-user"></i>
-                            <span>/profile</span>
-                            <input type="checkbox" name="commands" value="profile">
-                        </label>
-                    </div>
-                    
-                    <div class="form-group" style="margin-top: 20px;">
-                        <label for="customCommands">Свои команды:</label>
-                        <textarea id="customCommands" placeholder="/book — записаться, /status — статус заказа, /cancel — отменить"></textarea>
-                    </div>
-                    
-                    <div class="toggle-switch" style="margin-top: 16px;">
-                        <span>Настроить команды через @BotFather</span>
-                        <label class="toggle-slider">
-                            <input type="checkbox" id="botFatherSetup" checked>
-                            <span class="toggle-slider"></span>
-                        </label>
-                    </div>
-                </div>
-                
-                <!-- Блок 7: Дизайн и UX -->
-                <div class="form-section" id="section7">
-                    <div class="section-title"><i class="fas fa-palette"></i> Дизайн и интерфейс</div>
-                    <div class="section-description">Как должен выглядеть и работать ваш бот? От этого зависит удобство пользователей и их лояльность</div>
-                    
-                    <div class="form-group">
-                        <label>Основной интерфейс:</label>
-                        <div class="radio-group" style="margin-top: 12px;">
-                            <label class="radio-item">
-                                <input type="radio" name="interface" value="buttons" checked>
-                                <i class="fas fa-th-large"></i> Кнопки
-                            </label>
-                            <label class="radio-item">
-                                <input type="radio" name="interface" value="text">
-                                <i class="fas fa-keyboard"></i> Текст
-                            </label>
-                            <label class="radio-item">
-                                <input type="radio" name="interface" value="mixed">
-                                <i class="fas fa-exchange-alt"></i> Смешанный
-                            </label>
-                        </div>
-                    </div>
-                    
-                    <div class="toggle-switch" style="margin: 24px 0;">
-                        <span>Нужен ли кастомный интерфейс (Mini App)?</span>
-                        <label class="toggle-slider">
-                            <input type="checkbox" id="needMiniApp">
-                            <span class="toggle-slider"></span>
-                        </label>
-                    </div>
-                    
-                    <div class="form-group" id="miniAppDetails" style="display: none;">
-                        <label for="miniAppDescription">Описание интерфейса:</label>
-                        <textarea id="miniAppDescription" placeholder="Например: форма бронирования с календарём, личный кабинет с историей заказов, каталог товаров с фильтрами"></textarea>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="designPreferences">Предпочтения по стилю:</label>
-                        <textarea id="designPreferences" placeholder="Цвета бренда, особые требования к внешнему виду, примеры понравившихся ботов"></textarea>
-                    </div>
-                </div>
-                
-                <!-- Блок 8: Дедлайн и бюджет -->
-                <div class="form-section" id="section8">
-                    <div class="section-title"><i class="fas fa-clock"></i> Сроки и бюджет</div>
-                    <div class="section-description">Ваши ожидания по времени и бюджету — мы подберём оптимальное решение, которое устроит обе стороны</div>
-                    
-                    <div class="form-group">
-                        <label for="deadline">Желаемый срок сдачи:</label>
-                        <input type="text" id="deadline" placeholder="Например: 2 недели, до 15 июня, как можно быстрее">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Ориентировочный бюджет:</label>
-                        <div class="budget-inputs">
-                            <input type="number" id="budgetFrom" placeholder="От ₽" min="0">
-                            <input type="number" id="budgetTo" placeholder="До ₽" min="0">
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="additionalInfo">Дополнительная информация:</label>
-                        <textarea id="additionalInfo" placeholder="Особые пожелания, примеры ботов-конкурентов, что важно учесть, предыдущий опыт работы с ботами"></textarea>
-                    </div>
-                </div>
-            </form>
-        </div>
-        
-        <!-- ЗАКРЕПЛЁННЫЕ КНОПКИ -->
-        <div class="btn-group">
-            <button type="button" class="btn btn-secondary" id="prevBtn" style="display: none;">
-                <i class="fas fa-arrow-left"></i> Назад
-            </button>
-            <button type="button" class="btn btn-primary" id="nextBtn">
-                Далее <i class="fas fa-arrow-right"></i>
-            </button>
-            <button type="submit" class="btn btn-primary" id="submitBtn" style="display: none;">
-                <i class="fas fa-paper-plane"></i> Отправить анкету
-            </button>
-        </div>
+<div class="container">
+    <div class="header">
+        <h1>🤖 Анкета для бота</h1>
+        <p>8 простых шагов — и мы создадим идеального бота</p>
     </div>
 
-    <script>
-        // Инициализация Telegram WebApp
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-        tg.ready();
-        
-        // Состояние формы
-        let currentSection = 1;
-        const totalSections = 8;
-        const sections = document.querySelectorAll('.form-section');
-        const stepDots = document.querySelectorAll('.step-dot');
-        
-        // DOM элементы
-        const progress = document.getElementById('progress');
-        const prevBtn = document.getElementById('prevBtn');
-        const nextBtn = document.getElementById('nextBtn');
-        const submitBtn = document.getElementById('submitBtn');
-        const form = document.getElementById('botForm');
-        
-        // Обновить прогресс
-        function updateProgress() {
-            const percent = ((currentSection - 1) / totalSections) * 100;
-            progress.style.width = `${percent}%`;
-            
-            // Обновить точки
-            stepDots.forEach((dot, index) => {
-                dot.classList.toggle('active', index < currentSection);
-            });
+    <div class="progress-container">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <div class="step-indicator" id="stepIndicator">
+        <div class="step-dot active"></div>
+        <div class="step-dot"></div>
+        <div class="step-dot"></div>
+        <div class="step-dot"></div>
+        <div class="step-dot"></div>
+        <div class="step-dot"></div>
+        <div class="step-dot"></div>
+        <div class="step-dot"></div>
+    </div>
+
+    <!-- FIX #4: id="botForm" совпадает с JS -->
+    <form id="botForm" novalidate>
+        <div class="form-wrapper" id="formWrapper">
+
+            <!-- Шаг 1: Тип бота -->
+            <div class="form-section active" id="section1">
+                <div class="section-title"><i class="fas fa-layer-group"></i> Тип бота <span class="required">*</span></div>
+                <div class="section-description">Выберите основное назначение — это поможет точнее оценить задачу</div>
+                <div class="form-group">
+                    <select id="botType">
+                        <option value="">Выберите тип бота...</option>
+                        <option value="booking">📅 Запись / бронирование</option>
+                        <option value="shop">🛒 Магазин / каталог</option>
+                        <option value="delivery">🚚 Доставка</option>
+                        <option value="education">🎓 Обучение / тесты</option>
+                        <option value="support">💬 Поддержка / FAQ</option>
+                        <option value="broadcast">📢 Рассылки</option>
+                        <option value="internal">🏢 Внутренние задачи</option>
+                        <option value="other">✨ Другое</option>
+                    </select>
+                    <div class="error-msg" id="botTypeError">Пожалуйста, выберите тип бота</div>
+                </div>
+                <div class="form-group" id="otherTypeGroup" style="display:none">
+                    <label class="field-label">Уточните тип:</label>
+                    <textarea id="otherTypeDesc" placeholder="Например: бот для автоматизации отчётности"></textarea>
+                </div>
+            </div>
+
+            <!-- Шаг 2: Аудитория -->
+            <div class="form-section" id="section2">
+                <div class="section-title"><i class="fas fa-users"></i> Целевая аудитория <span class="required">*</span></div>
+                <div class="section-description">Кто будет пользоваться ботом и сколько примерно человек?</div>
+                <div class="form-group">
+                    <label class="field-label">Описание аудитории:</label>
+                    <textarea id="targetAudience" placeholder="Например: клиенты салона красоты, 25–45 лет"></textarea>
+                    <div class="error-msg" id="audienceError">Расскажите, кто будет пользоваться ботом</div>
+                </div>
+                <div class="form-group">
+                    <label class="field-label">Примерное количество пользователей:</label>
+                    <input type="number" id="userCount" placeholder="Например: 500" min="1">
+                </div>
+            </div>
+
+            <!-- Шаг 3: Функционал -->
+            <div class="form-section" id="section3">
+                <div class="section-title"><i class="fas fa-cogs"></i> Функционал <span class="required">*</span></div>
+                <div class="section-description">Отметьте нужные функции — можно выбрать несколько</div>
+                <div class="checkbox-grid" id="featuresGrid">
+                    <div class="check-card" data-value="profile"><i class="fas fa-user-circle"></i>Личный кабинет</div>
+                    <div class="check-card" data-value="payment"><i class="fas fa-credit-card"></i>Оплата</div>
+                    <div class="check-card" data-value="admin"><i class="fas fa-shield-alt"></i>Админ-панель</div>
+                    <div class="check-card" data-value="notifications"><i class="fas fa-bell"></i>Уведомления</div>
+                    <div class="check-card" data-value="integrations"><i class="fas fa-plug"></i>Интеграции</div>
+                    <div class="check-card" data-value="referral"><i class="fas fa-gift"></i>Рефералка</div>
+                    <div class="check-card" data-value="multilang"><i class="fas fa-language"></i>Мультиязычность</div>
+                    <div class="check-card" data-value="analytics"><i class="fas fa-chart-bar"></i>Статистика</div>
+                    <div class="check-card" data-value="miniapp"><i class="fas fa-mobile-alt"></i>Mini App</div>
+                </div>
+                <div class="error-msg" id="featuresError">Выберите хотя бы одну функцию</div>
+                <div class="form-group" style="margin-top:16px">
+                    <label class="field-label">Другие пожелания:</label>
+                    <textarea id="additionalFeatures" placeholder="Например: генерация PDF-чеков, интеграция с Яндекс.Картами"></textarea>
+                </div>
+            </div>
+
+            <!-- Шаг 4: Платформа -->
+            <div class="form-section" id="section4">
+                <div class="section-title"><i class="fas fa-server"></i> Платформа запуска <span class="required">*</span></div>
+                <!-- FIX #5: исправлена опечатка в section-description -->
+                <div class="section-description">Где будет работать бот? От этого зависит сложность развёртывания</div>
+                <div class="radio-group" id="platformGroup">
+                    <div class="radio-card" data-group="platform" data-value="local">💻 Локально (ваш ПК)</div>
+                    <div class="radio-card" data-group="platform" data-value="vps">☁️ VPS / сервер (24/7)</div>
+                    <div class="radio-card" data-group="platform" data-value="unknown">❓ Не знаю — посоветуйте</div>
+                </div>
+                <div class="error-msg" id="platformError">Выберите платформу запуска</div>
+                <div id="osGroup" style="display:none; margin-top:16px">
+                    <label class="field-label">Операционная система:</label>
+                    <div class="radio-group">
+                        <div class="radio-card" data-group="os" data-value="windows">🪟 Windows</div>
+                        <div class="radio-card" data-group="os" data-value="mac">🍎 macOS</div>
+                        <div class="radio-card" data-group="os" data-value="linux">🐧 Linux</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Шаг 5: Интеграции -->
+            <div class="form-section" id="section5">
+                <div class="section-title"><i class="fas fa-link"></i> Интеграции</div>
+                <div class="section-description">Какие внешние сервисы нужно подключить?</div>
+                <div class="checkbox-grid" id="integrationsGrid">
+                    <div class="check-card" data-value="crm"><i class="fas fa-sitemap"></i>CRM</div>
+                    <div class="check-card" data-value="google_sheets"><i class="fab fa-google"></i>Google Sheets</div>
+                    <div class="check-card" data-value="1c"><i class="fas fa-cube"></i>1С</div>
+                    <div class="check-card" data-value="payment_sys"><i class="fas fa-money-check-alt"></i>Платежи</div>
+                    <div class="check-card" data-value="telegram_api"><i class="fab fa-telegram"></i>Telegram API</div>
+                    <div class="check-card" data-value="none"><i class="fas fa-times-circle"></i>Не нужны</div>
+                </div>
+                <div class="form-group" style="margin-top:16px">
+                    <label class="field-label">Другие сервисы:</label>
+                    <textarea id="customIntegrations" placeholder="Например: Битрикс24, Яндекс.Метрика, amoCRM"></textarea>
+                </div>
+            </div>
+
+            <!-- Шаг 6: Команды -->
+            <div class="form-section" id="section6">
+                <div class="section-title"><i class="fas fa-terminal"></i> Команды бота</div>
+                <div class="section-description">Какие команды должны быть доступны пользователям?</div>
+                <div class="checkbox-grid" id="commandsGrid">
+                    <div class="check-card selected" data-value="start"><i class="fas fa-play"></i>/start</div>
+                    <div class="check-card" data-value="help"><i class="fas fa-question"></i>/help</div>
+                    <div class="check-card" data-value="menu"><i class="fas fa-bars"></i>/menu</div>
+                    <div class="check-card" data-value="settings"><i class="fas fa-cog"></i>/settings</div>
+                    <div class="check-card" data-value="profile"><i class="fas fa-user"></i>/profile</div>
+                    <div class="check-card" data-value="cancel"><i class="fas fa-ban"></i>/cancel</div>
+                </div>
+                <div class="form-group" style="margin-top:16px">
+                    <label class="field-label">Свои команды:</label>
+                    <textarea id="customCommands" placeholder="/book — записаться, /status — статус заказа"></textarea>
+                </div>
+                <!-- FIX #3: правильный toggle без конфликта классов -->
+                <div class="toggle-row" onclick="toggleSwitch('botFatherToggle')">
+                    <span class="toggle-label">⚙️ Настроить команды через @BotFather</span>
+                    <div class="toggle-track on" id="botFatherToggle">
+                        <div class="toggle-thumb"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Шаг 7: Дизайн -->
+            <div class="form-section" id="section7">
+                <div class="section-title"><i class="fas fa-palette"></i> Дизайн и интерфейс</div>
+                <div class="section-description">Как должен выглядеть и работать ваш бот?</div>
+                <div class="form-group">
+                    <label class="field-label">Основной интерфейс:</label>
+                    <div class="radio-group">
+                        <div class="radio-card selected" data-group="interface" data-value="buttons">🔲 Кнопки</div>
+                        <div class="radio-card" data-group="interface" data-value="text">⌨️ Текст</div>
+                        <div class="radio-card" data-group="interface" data-value="mixed">🔀 Смешанный</div>
+                    </div>
+                </div>
+                <div class="toggle-row" onclick="toggleSwitch('miniAppToggle', 'miniAppDetails')">
+                    <span class="toggle-label">📱 Нужен кастомный интерфейс (Mini App)?</span>
+                    <div class="toggle-track" id="miniAppToggle">
+                        <div class="toggle-thumb"></div>
+                    </div>
+                </div>
+                <div id="miniAppDetails" style="display:none">
+                    <div class="form-group">
+                        <label class="field-label">Описание интерфейса:</label>
+                        <textarea id="miniAppDesc" placeholder="Например: форма бронирования с календарём, каталог товаров"></textarea>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="field-label">Стиль и пожелания:</label>
+                    <textarea id="designPrefs" placeholder="Цвета бренда, примеры похожих ботов, особые требования"></textarea>
+                </div>
+            </div>
+
+            <!-- Шаг 8: Сроки и бюджет -->
+            <div class="form-section" id="section8">
+                <div class="section-title"><i class="fas fa-clock"></i> Сроки и бюджет</div>
+                <div class="section-description">Ваши ожидания по времени и стоимости</div>
+                <div class="form-group">
+                    <label class="field-label">Желаемый срок:</label>
+                    <input type="text" id="deadline" placeholder="Например: 2 недели, до 15 июня">
+                </div>
+                <div class="form-group">
+                    <label class="field-label">Ориентировочный бюджет:</label>
+                    <div class="budget-row">
+                        <input type="number" id="budgetFrom" placeholder="От ₽" min="0">
+                        <input type="number" id="budgetTo" placeholder="До ₽" min="0">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="field-label">Дополнительно:</label>
+                    <textarea id="additionalInfo" placeholder="Особые пожелания, примеры ботов которые нравятся, что важно"></textarea>
+                </div>
+            </div>
+
+        </div><!-- /form-wrapper -->
+
+        <!-- Экран успеха -->
+        <div class="success-screen" id="successScreen">
+            <i class="fas fa-check-circle"></i>
+            <h2>Анкета отправлена!</h2>
+            <p>Скоро напишу вам с расчётом стоимости 😊</p>
+        </div>
+
+    </form><!-- /botForm -->
+
+    <div class="btn-group" id="btnGroup">
+        <button type="button" class="btn btn-secondary" id="prevBtn" style="display:none" onclick="goBack()">
+            <i class="fas fa-arrow-left"></i> Назад
+        </button>
+        <button type="button" class="btn btn-primary" id="nextBtn" onclick="goNext()">
+            Далее <i class="fas fa-arrow-right"></i>
+        </button>
+        <button type="button" class="btn btn-primary" id="submitBtn" style="display:none" onclick="submitForm()">
+            <i class="fas fa-paper-plane"></i> Отправить анкету
+        </button>
+    </div>
+</div>
+
+<script>
+    // ── Telegram WebApp ──────────────────────────────────────────
+    const tg = window.Telegram?.WebApp;
+    if (tg) { tg.expand(); tg.ready(); }
+
+    // ── Состояние ───────────────────────────────────────────────
+    // FIX #6: currentSection задаётся один раз, showSection не сбрасывает его через setTimeout
+    let currentSection = 1;
+    const TOTAL = 8;
+
+    // Выбранные значения (radio-группы)
+    const radioState = { platform: '', os: '', interface: 'buttons' };
+
+    // ── Toggle switches ──────────────────────────────────────────
+    function toggleSwitch(trackId, detailsId) {
+        const track = document.getElementById(trackId);
+        track.classList.toggle('on');
+        if (detailsId) {
+            const el = document.getElementById(detailsId);
+            el.style.display = track.classList.contains('on') ? 'block' : 'none';
         }
-        
-        // Показать секцию с АНИМАЦИЕЙ ПЕРЕЛИСТЫВАНИЯ
-        function showSection(sectionNumber) {
-            // Добавляем класс "prev" для анимации уходящего блока
-            if (sectionNumber > currentSection) {
-                // Вперёд → текущий уходит влево
-                document.getElementById(`section${currentSection}`).classList.add('prev');
-            } else if (sectionNumber < currentSection) {
-                // Назад → текущий уходит вправо
-                document.getElementById(`section${currentSection}`).classList.remove('active');
+    }
+
+    // ── Check-cards (мультивыбор) ────────────────────────────────
+    // FIX #2: клик напрямую на div, никакого конфликта с input внутри label
+    document.querySelectorAll('.check-card').forEach(card => {
+        card.addEventListener('click', () => {
+            card.classList.toggle('selected');
+        });
+    });
+
+    // ── Radio-cards (одиночный выбор) ────────────────────────────
+    document.querySelectorAll('.radio-card').forEach(card => {
+        card.addEventListener('click', () => {
+            const group = card.dataset.group;
+            document.querySelectorAll(`.radio-card[data-group="${group}"]`)
+                    .forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            radioState[group] = card.dataset.value;
+
+            // Показать выбор ОС при локальной платформе
+            if (group === 'platform') {
+                document.getElementById('osGroup').style.display =
+                    card.dataset.value === 'local' ? 'block' : 'none';
             }
-            
-            // Ждём окончания анимации перед показом нового блока
-            setTimeout(() => {
-                // Скрыть все секции
-                sections.forEach(section => {
-                    section.classList.remove('active', 'prev');
+        });
+    });
+
+    // ── Показать/скрыть "другой тип" ─────────────────────────────
+    document.getElementById('botType').addEventListener('change', e => {
+        document.getElementById('otherTypeGroup').style.display =
+            e.target.value === 'other' ? 'block' : 'none';
+    });
+
+    // ── Обновление прогресса ─────────────────────────────────────
+    function updateUI() {
+        // Прогресс-бар
+        const pct = (currentSection / TOTAL) * 100;
+        document.getElementById('progressBar').style.width = pct + '%';
+
+        // Точки
+        document.querySelectorAll('.step-dot').forEach((dot, i) => {
+            dot.classList.toggle('active', i < currentSection);
+        });
+
+        // Кнопки
+        document.getElementById('prevBtn').style.display = currentSection > 1 ? 'flex' : 'none';
+        document.getElementById('nextBtn').style.display = currentSection < TOTAL ? 'flex' : 'none';
+        document.getElementById('submitBtn').style.display = currentSection === TOTAL ? 'flex' : 'none';
+    }
+
+    // ── Переход к секции ─────────────────────────────────────────
+    // FIX #6: нет setTimeout с изменением currentSection — всё синхронно
+    function goToSection(next) {
+        const cur = document.getElementById('section' + currentSection);
+        const nxt = document.getElementById('section' + next);
+
+        if (next > currentSection) {
+            cur.classList.remove('active');
+            cur.classList.add('prev');
+            nxt.style.transform = 'translateX(100%)';
+            nxt.style.opacity = '0';
+            nxt.classList.add('active');
+            // Запускаем анимацию через rAF чтобы браузер увидел начальное состояние
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    nxt.style.transform = '';
+                    nxt.style.opacity = '';
                 });
-                
-                // Показать текущую
-                document.getElementById(`section${sectionNumber}`).classList.add('active');
-                
-                // Обновить прогресс
-                updateProgress();
-                
-                // Обновить кнопки
-                if (sectionNumber === 1) {
-                    prevBtn.style.display = 'none';
-                } else {
-                    prevBtn.style.display = 'block';
-                }
-                
-                if (sectionNumber === totalSections) {
-                    nextBtn.style.display = 'none';
-                    submitBtn.style.display = 'block';
-                } else {
-                    nextBtn.style.display = 'block';
-                    submitBtn.style.display = 'none';
-                }
-                
-                currentSection = sectionNumber;
-            }, 300);
-        }
-        
-        // Валидация секции
-        function validateSection(sectionNumber) {
-            let isValid = true;
-            
-            switch(sectionNumber) {
-                case 1: // Тип бота
-                    const botType = document.getElementById('botType').value;
-                    const errorEl = document.getElementById('botTypeError');
-                    if (!botType) {
-                        errorEl.style.display = 'block';
-                        errorEl.style.animation = 'shake 0.4s';
-                        setTimeout(() => { errorEl.style.animation = ''; }, 400);
-                        isValid = false;
-                    } else {
-                        errorEl.style.display = 'none';
-                    }
-                    break;
-                    
-                case 2: // Целевая аудитория
-                    const targetAudience = document.getElementById('targetAudience').value.trim();
-                    const errorEl2 = document.getElementById('targetAudienceError');
-                    if (!targetAudience) {
-                        errorEl2.style.display = 'block';
-                        errorEl2.style.animation = 'shake 0.4s';
-                        setTimeout(() => { errorEl2.style.animation = ''; }, 400);
-                        isValid = false;
-                    } else {
-                        errorEl2.style.display = 'none';
-                    }
-                    break;
-                    
-                case 3: // Функционал
-                    const features = document.querySelectorAll('input[name="features"]:checked');
-                    const errorEl3 = document.getElementById('featuresError');
-                    if (features.length === 0) {
-                        errorEl3.style.display = 'block';
-                        errorEl3.style.animation = 'shake 0.4s';
-                        setTimeout(() => { errorEl3.style.animation = ''; }, 400);
-                        isValid = false;
-                    } else {
-                        errorEl3.style.display = 'none';
-                    }
-                    break;
-                    
-                case 4: // Платформа
-                    const platform = document.querySelector('input[name="platform"]:checked');
-                    const errorEl4 = document.getElementById('platformError');
-                    if (!platform) {
-                        errorEl4.style.display = 'block';
-                        errorEl4.style.animation = 'shake 0.4s';
-                        setTimeout(() => { errorEl4.style.animation = ''; }, 400);
-                        isValid = false;
-                    } else {
-                        errorEl4.style.display = 'none';
-                    }
-                    break;
-            }
-            
-            return isValid;
-        }
-        
-        // Обработчики кнопок
-        prevBtn.addEventListener('click', () => {
-            if (currentSection > 1) {
-                showSection(currentSection - 1);
-            }
-        });
-        
-        nextBtn.addEventListener('click', () => {
-            if (validateSection(currentSection)) {
-                showSection(currentSection + 1);
-            }
-        });
-        
-        // Обработчик отправки формы
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            
-            if (!validateSection(currentSection)) {
-                return;
-            }
-            
-            // Собрать все данные
-            const formData = {
-                botType: document.getElementById('botType').value,
-                otherTypeDescription: document.getElementById('otherTypeDescription').value,
-                targetAudience: document.getElementById('targetAudience').value,
-                userCount: document.getElementById('userCount').value,
-                features: Array.from(document.querySelectorAll('input[name="features"]:checked')).map(el => el.value),
-                additionalFeatures: document.getElementById('additionalFeatures').value,
-                platform: document.querySelector('input[name="platform"]:checked')?.value,
-                os: document.querySelector('input[name="os"]:checked')?.value,
-                integrations: Array.from(document.querySelectorAll('input[name="integrations"]:checked')).map(el => el.value),
-                customIntegrations: document.getElementById('customIntegrations').value,
-                commands: Array.from(document.querySelectorAll('input[name="commands"]:checked')).map(el => el.value),
-                customCommands: document.getElementById('customCommands').value,
-                botFatherSetup: document.getElementById('botFatherSetup').checked,
-                interface: document.querySelector('input[name="interface"]:checked')?.value,
-                needMiniApp: document.getElementById('needMiniApp').checked,
-                miniAppDescription: document.getElementById('miniAppDescription').value,
-                designPreferences: document.getElementById('designPreferences').value,
-                deadline: document.getElementById('deadline').value,
-                budgetFrom: document.getElementById('budgetFrom').value,
-                budgetTo: document.getElementById('budgetTo').value,
-                additionalInfo: document.getElementById('additionalInfo').value
-            };
-            
-            // Отправить данные через Telegram WebApp
-            tg.sendData(JSON.stringify(formData));
-            
-            // Показать сообщение об успехе
-            tg.showAlert('✅ Анкета отправлена!\nСкоро напишу вам с расчётом стоимости.');
-            
-            // Закрыть приложение через 1.5 секунды
-            setTimeout(() => {
-                tg.close();
-            }, 1500);
-        });
-        
-        // Показать/скрыть поле "Другое" для типа бота
-        document.getElementById('botType').addEventListener('change', (e) => {
-            const otherTypeGroup = document.getElementById('otherTypeGroup');
-            if (e.target.value === 'other') {
-                otherTypeGroup.style.display = 'block';
-            } else {
-                otherTypeGroup.style.display = 'none';
-            }
-        });
-        
-        // Показать/скрыть детали для локальной платформы
-        document.querySelectorAll('input[name="platform"]').forEach(radio => {
-            radio.addEventListener('change', (e) => {
-                const localPlatformDetails = document.getElementById('localPlatformDetails');
-                if (e.target.value === 'local') {
-                    localPlatformDetails.style.display = 'block';
-                } else {
-                    localPlatformDetails.style.display = 'none';
-                }
             });
-        });
-        
-        // Показать/скрыть детали для Mini App
-        document.getElementById('needMiniApp').addEventListener('change', (e) => {
-            const miniAppDetails = document.getElementById('miniAppDetails');
-            if (e.target.checked) {
-                miniAppDetails.style.display = 'block';
-            } else {
-                miniAppDetails.style.display = 'none';
-            }
-        });
-        
-        // Стилизация чекбоксов и радиокнопок
-        document.querySelectorAll('.checkbox-item, .radio-item').forEach(item => {
-            item.addEventListener('click', function() {
-                const input = this.querySelector('input');
-                if (input.type === 'checkbox') {
-                    input.checked = !input.checked;
-                    this.classList.toggle('active', input.checked);
-                } else {
-                    input.checked = true;
-                    document.querySelectorAll(`input[name="${input.name}"]`).forEach(i => {
-                        i.closest('.radio-item').classList.remove('active');
-                    });
-                    this.classList.add('active');
-                }
+        } else {
+            cur.classList.remove('active');
+            cur.style.transform = 'translateX(100%)';
+            cur.style.opacity = '0';
+            nxt.classList.remove('prev');
+            nxt.classList.add('active');
+            nxt.style.transform = 'translateX(-100%)';
+            nxt.style.opacity = '0';
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    nxt.style.transform = '';
+                    nxt.style.opacity = '';
+                    cur.style.transform = '';
+                    cur.style.opacity = '';
+                });
             });
-        });
-        
-        // Начать с первой секции
-        showSection(1);
-    </script>
+        }
+
+        currentSection = next;
+        updateUI();
+
+        // Скролл наверх
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ── Валидация ────────────────────────────────────────────────
+    function validate(step) {
+        let ok = true;
+
+        function showError(id) {
+            const el = document.getElementById(id);
+            el.style.display = 'block';
+            el.classList.remove('shake');
+            void el.offsetWidth; // reflow
+            el.classList.add('shake');
+            ok = false;
+        }
+        function hideError(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        if (step === 1) {
+            if (!document.getElementById('botType').value) showError('botTypeError');
+            else hideError('botTypeError');
+        }
+        if (step === 2) {
+            if (!document.getElementById('targetAudience').value.trim()) showError('audienceError');
+            else hideError('audienceError');
+        }
+        if (step === 3) {
+            if (!document.querySelectorAll('#featuresGrid .check-card.selected').length) showError('featuresError');
+            else hideError('featuresError');
+        }
+        if (step === 4) {
+            if (!radioState.platform) showError('platformError');
+            else hideError('platformError');
+        }
+
+        return ok;
+    }
+
+    // ── Навигация ────────────────────────────────────────────────
+    function goNext() {
+        if (!validate(currentSection)) return;
+        if (currentSection < TOTAL) goToSection(currentSection + 1);
+    }
+
+    function goBack() {
+        if (currentSection > 1) goToSection(currentSection - 1);
+    }
+
+    // ── Сбор данных ──────────────────────────────────────────────
+    function collectData() {
+        const getChecked = (gridId) =>
+            Array.from(document.querySelectorAll(`#${gridId} .check-card.selected`))
+                 .map(c => c.dataset.value);
+
+        return {
+            botType:            document.getElementById('botType').value,
+            otherTypeDesc:      document.getElementById('otherTypeDesc').value,
+            targetAudience:     document.getElementById('targetAudience').value,
+            userCount:          document.getElementById('userCount').value,
+            features:           getChecked('featuresGrid'),
+            additionalFeatures: document.getElementById('additionalFeatures').value,
+            platform:           radioState.platform,
+            os:                 radioState.os,
+            integrations:       getChecked('integrationsGrid'),
+            customIntegrations: document.getElementById('customIntegrations').value,
+            commands:           getChecked('commandsGrid'),
+            customCommands:     document.getElementById('customCommands').value,
+            botFatherSetup:     document.getElementById('botFatherToggle').classList.contains('on'),
+            interface:          radioState.interface,
+            needMiniApp:        document.getElementById('miniAppToggle').classList.contains('on'),
+            miniAppDesc:        document.getElementById('miniAppDesc').value,
+            designPrefs:        document.getElementById('designPrefs').value,
+            deadline:           document.getElementById('deadline').value,
+            budgetFrom:         document.getElementById('budgetFrom').value,
+            budgetTo:           document.getElementById('budgetTo').value,
+            additionalInfo:     document.getElementById('additionalInfo').value,
+        };
+    }
+
+    // ── Отправка ─────────────────────────────────────────────────
+    function submitForm() {
+        if (!validate(currentSection)) return;
+
+        const data = collectData();
+        const json = JSON.stringify(data);
+
+        if (tg) {
+            tg.sendData(json);
+            document.getElementById('botForm').style.display = 'none';
+            document.getElementById('successScreen').style.display = 'block';
+            document.getElementById('btnGroup').style.display = 'none';
+            setTimeout(() => tg.close(), 2000);
+        } else {
+            // Режим отладки без Telegram
+            console.log('Данные анкеты:', data);
+            document.getElementById('botForm').style.display = 'none';
+            document.getElementById('successScreen').style.display = 'block';
+            document.getElementById('btnGroup').style.display = 'none';
+        }
+    }
+
+    // ── Инициализация ────────────────────────────────────────────
+    updateUI();
+</script>
 </body>
 </html>
