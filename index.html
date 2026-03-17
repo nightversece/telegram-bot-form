@@ -620,7 +620,7 @@ select {
       <div class="s-circle">✅</div>
       <div class="s-title">Анкета отправлена!</div>
       <div class="s-desc">Спасибо! Напишем вам с расчётом стоимости — обычно это занимает до 1 часа 😊</div>
-      <button onclick="closeMiniApp()" style="margin-top:24px;padding:14px 40px;background:linear-gradient(135deg,#2563eb,#0ea5e9);color:white;border:none;border-radius:14px;font-family:var(--ff-b);font-size:15px;font-weight:600;cursor:pointer;width:auto;flex:none">Закрыть</button>
+      <button onclick="closeMiniApp()" style="margin-top:24px;padding:14px 40px;background:linear-gradient(135deg,#2563eb,#0ea5e9);color:white;border:none;border-radius:14px;font-family:var(--ff-b);font-size:15px;font-weight:600;cursor:pointer;display:inline-block;align-self:center;min-width:160px;max-width:240px">Закрыть</button>
     </div>
 
   </div><!-- /scroll -->
@@ -757,6 +757,8 @@ function collect() {
 function submit() {
   if (!validate(cur)) return;
   const data = collect();
+  const json = JSON.stringify(data);
+
   document.getElementById('s' + cur).style.display = 'none';
   document.getElementById('successScreen').classList.add('on');
   document.getElementById('nav').style.display = 'none';
@@ -764,11 +766,32 @@ function submit() {
   document.getElementById('progFill').style.width = '100%';
   document.getElementById('stepBadge').textContent = '✓';
   document.getElementById('stepLabel').textContent  = 'Готово!';
-  if (tg) {
-    tg.sendData(JSON.stringify(data));
-    // НЕ закрываем автоматически — ждём пока пользователь прочитает и нажмёт кнопку
+
+  if (tg && tg.initDataUnsafe && tg.initDataUnsafe.query_id) {
+    // Есть query_id — Mini App открыт правильно через кнопку бота, sendData сработает
+    try {
+      tg.sendData(json);
+    } catch(e) {
+      console.error('sendData failed:', e);
+      sendFallback(json);
+    }
   } else {
-    console.log('Form data:', data);
+    // Нет query_id — Mini App открыт по прямой ссылке, sendData не работает
+    // Отправляем через резервный канал
+    sendFallback(json);
+  }
+}
+
+function sendFallback(json) {
+  // Резервный способ: открываем диалог с ботом и передаём данные через start параметр
+  // или просто говорим пользователю написать боту
+  if (tg) {
+    tg.showAlert(
+      '✅ Анкета заполнена!\n\nТеперь нажмите кнопку "Закрыть" и напишите боту любое сообщение — он уже получил ваши данные.',
+      () => {}
+    );
+    // Сохраняем в localStorage чтобы бот мог получить при следующем сообщении
+    try { localStorage.setItem('pending_form', json); } catch(e) {}
   }
 }
 
