@@ -617,10 +617,11 @@ select {
 
     <!-- SUCCESS -->
     <div class="success" id="successScreen">
-      <div class="s-circle">✅</div>
-      <div class="s-title">Анкета отправлена!</div>
-      <div class="s-desc">Спасибо! Напишем вам с расчётом стоимости — обычно это занимает до 1 часа 😊</div>
-      <button onclick="closeMiniApp()" style="margin-top:24px;padding:14px 40px;background:linear-gradient(135deg,#2563eb,#0ea5e9);color:white;border:none;border-radius:14px;font-family:var(--ff-b);font-size:15px;font-weight:600;cursor:pointer;display:inline-block;align-self:center;min-width:160px;max-width:240px">Закрыть</button>
+      <div class="s-circle" id="s-circle">✅</div>
+      <div class="s-title" id="s-title">Анкета отправлена!</div>
+      <div class="s-desc" id="s-desc">Спасибо! Напишем вам с расчётом стоимости — обычно это занимает до 1 часа 😊</div>
+      <div id="debugBox" style="display:none;margin-top:14px;padding:12px;background:#f0f4ff;border-radius:10px;font-size:11px;color:#3d4152;text-align:left;width:100%;max-height:180px;overflow-y:auto;word-break:break-all;line-height:1.5"></div>
+      <button onclick="closeMiniApp()" style="margin-top:20px;padding:14px 40px;background:linear-gradient(135deg,#2563eb,#0ea5e9);color:white;border:none;border-radius:14px;font-family:var(--ff-b);font-size:15px;font-weight:600;cursor:pointer;display:inline-block;align-self:center;min-width:160px;max-width:240px">Закрыть</button>
     </div>
 
   </div><!-- /scroll -->
@@ -754,11 +755,19 @@ function collect() {
 }
 
 // ── Submit ─────────────────────────────────────────────
+function dbg(msg) {
+  const box = document.getElementById('debugBox');
+  if (!box) return;
+  box.style.display = 'block';
+  box.innerHTML += msg + '<br>';
+}
+
 function submit() {
   if (!validate(cur)) return;
   const data = collect();
   const json = JSON.stringify(data);
 
+  // Показываем экран успеха
   document.getElementById('s' + cur).style.display = 'none';
   document.getElementById('successScreen').classList.add('on');
   document.getElementById('nav').style.display = 'none';
@@ -767,31 +776,31 @@ function submit() {
   document.getElementById('stepBadge').textContent = '✓';
   document.getElementById('stepLabel').textContent  = 'Готово!';
 
-  if (tg && tg.initDataUnsafe && tg.initDataUnsafe.query_id) {
-    // Есть query_id — Mini App открыт правильно через кнопку бота, sendData сработает
+  // Диагностика
+  dbg('tg exists: ' + !!tg);
+  dbg('sendData fn: ' + !!(tg && tg.sendData));
+  dbg('query_id: ' + (tg && tg.initDataUnsafe ? tg.initDataUnsafe.query_id || 'нет' : 'нет initDataUnsafe'));
+  dbg('initData len: ' + (tg && tg.initData ? tg.initData.length : 0));
+  dbg('данные ' + json.length + ' байт');
+  dbg('тип бота: ' + (data.botType || 'не выбран'));
+
+  if (tg && tg.sendData) {
     try {
       tg.sendData(json);
+      dbg('✅ sendData вызван успешно');
+      document.getElementById('s-title').textContent = 'Анкета отправлена!';
+      document.getElementById('s-desc').textContent = 'Данные переданы боту. Напишем вам с расчётом стоимости 😊';
     } catch(e) {
-      console.error('sendData failed:', e);
-      sendFallback(json);
+      dbg('❌ sendData ошибка: ' + e.message);
+      document.getElementById('s-circle').textContent = '⚠️';
+      document.getElementById('s-title').textContent = 'Ошибка отправки';
+      document.getElementById('s-desc').textContent = 'sendData не сработал. Закройте и напишите боту вручную.';
     }
   } else {
-    // Нет query_id — Mini App открыт по прямой ссылке, sendData не работает
-    // Отправляем через резервный канал
-    sendFallback(json);
-  }
-}
-
-function sendFallback(json) {
-  // Резервный способ: открываем диалог с ботом и передаём данные через start параметр
-  // или просто говорим пользователю написать боту
-  if (tg) {
-    tg.showAlert(
-      '✅ Анкета заполнена!\n\nТеперь нажмите кнопку "Закрыть" и напишите боту любое сообщение — он уже получил ваши данные.',
-      () => {}
-    );
-    // Сохраняем в localStorage чтобы бот мог получить при следующем сообщении
-    try { localStorage.setItem('pending_form', json); } catch(e) {}
+    dbg('❌ tg.sendData недоступен — анкета открыта не через кнопку бота');
+    document.getElementById('s-circle').textContent = '⚠️';
+    document.getElementById('s-title').textContent = 'Нужно открыть через бота';
+    document.getElementById('s-desc').textContent = 'Закройте, напишите боту /start и нажмите кнопку "📝 Заполнить анкету"';
   }
 }
 
